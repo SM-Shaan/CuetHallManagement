@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import RoomApplicationForm from '../components/rooms/RoomApplicationForm';
 
 const RoomsPage = () => {
   const rooms = [
@@ -9,8 +10,14 @@ const RoomsPage = () => {
     { id: 5, roomNumber: '105', type: 'Single', available: true },
   ];
 
+  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
+
   const handleApply = (roomNumber: string) => {
-    alert(`Your application for Room ${roomNumber} has been submitted!`);
+    setSelectedRoom(roomNumber);
+  };
+
+  const closeForm = () => {
+    setSelectedRoom(null);
   };
 
   return (
@@ -40,6 +47,10 @@ const RoomsPage = () => {
           </div>
         ))}
       </div>
+
+      {selectedRoom && (
+        <RoomApplicationForm roomNumber={selectedRoom} onClose={closeForm} />
+      )}
     </div>
   );
 };

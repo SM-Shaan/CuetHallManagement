@@ -2,6 +2,7 @@ import React from 'react';
 import { MessageSquare, Bell, Home, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom'; // Import Link for routing
 import AuthButtons from '../auth/AuthButtons';
+import DashboardIcon from '../icons/DashboardIcon';
 
 const Navbar = () => {
   return (
@@ -12,10 +13,17 @@ const Navbar = () => {
             Hall Management
           </Link>
           <div className="hidden md:flex space-x-8">
+            <NavItem icon={<DashboardIcon size={20} />} text="Dashboard" route="/manager" />
             <NavItem icon={<Home size={20} />} text="Rooms" route="/rooms" />
             <NavItem icon={<MessageSquare size={20} />} text="Complain" route="/complaints" />
             <NavItem icon={<Bell size={20} />} text="Notices" route="/notices" />
-            <NavItem icon={<DollarSign size={20} />} text="Payment" route='#'/>
+            <NavItem icon={<DollarSign size={20} />} text="Payment" route='/payment'/>
+            {/* <Link to="/login" className="hover:text-indigo-200 transition-colors duration-200">
+              Login
+            </Link>
+            <Link to="/signup" className="hover:text-indigo-200 transition-colors duration-200">
+              Sign Up
+            </Link> */}
           </div>
           <div className="hidden md:block">
             <AuthButtons />

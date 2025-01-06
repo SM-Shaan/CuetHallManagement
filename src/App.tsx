@@ -6,11 +6,14 @@ import About from './components/home/About';
 import Features from './components/home/Features';
 import ChatWidget from './components/chat/ChatWidget';
 import Footer from './components/layout/Footer';
+import ManagerDashboard from './pages/ManagerDashboard';
 
 import RoomsPage from './pages/RoomsPage';
 import ComplaintsPage from './pages/ComplaintsPage';
 import NoticesPage from './pages/NoticesPage';
 import PaymentPage from './pages/PaymentPage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
 
 function App() {
   return (
@@ -32,10 +35,13 @@ function App() {
                   </>
                 }
               />
+              <Route path="/manager" element={<ManagerDashboard />} />
               <Route path="/rooms" element={<RoomsPage />} />
               <Route path="/complaints" element={<ComplaintsPage />} />
               <Route path="/notices" element={<NoticesPage />} />
               <Route path="/payment" element={<PaymentPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
             </Routes>
           </main>
           <ChatWidget />

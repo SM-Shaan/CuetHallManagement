@@ -1,5 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import DashboardIcon from '../icons/DashboardIcon';
 
 const Hero = () => {
   return (
@@ -25,6 +27,15 @@ const Hero = () => {
               Submit Complaint
               <ArrowRight className="inline-block ml-2 transform group-hover:translate-x-1 transition-transform duration-200" size={20} />
             </button>
+          </div>
+          <div className="flex gap-4 mt-8">
+            <Link
+              to="/manager"
+              className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
+            >
+              <DashboardIcon size={20} />
+              Access Dashboard
+            </Link>
           </div>
         </div>
       </div>
