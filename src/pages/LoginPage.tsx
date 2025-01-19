@@ -8,8 +8,11 @@ const LoginPage = () => {
   const [name, setName] = useState('');
   const [department, setDepartment] = useState('');
   const [imageData, setImageData] = useState('');
+  const [roomNo, setRoomNo] = useState('');
+  const [hallName, setHallName] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoggingIn, setIsLoggingIn] = useState(false); // New state for login process
 
   useEffect(() => {
     // Fetch initial data if needed
@@ -35,6 +38,9 @@ const LoginPage = () => {
             setName(data.name);
             setDepartment(data.department);
             setImageData(data.imageData);
+            //alert(data.roomNo);
+            setRoomNo(data.roomNo);
+            setHallName(data.hallName);
             setIsLoggedIn(true);
           }
         })
@@ -55,6 +61,8 @@ const LoginPage = () => {
       return;
     }
 
+    setIsLoggingIn(true); // Set login process state to true
+
     const payload = {
       email,
       password,
@@ -71,23 +79,24 @@ const LoginPage = () => {
       .then((response) =>
         response.json().then((data) => {
           if (response.ok) {
-            alert(data.message);
             // Store the token in local storage
             localStorage.setItem('token', data.token);
             setIsLoggedIn(true);
+            window.location.href = '/'; // Redirect to home page
           } else {
             alert(data.message || 'Login failed.');
-            return;
+            setIsLoggingIn(false); // Reset login process state
           }
         })
       )
       .catch((error) => {
         console.error('Error:', error);
         alert(`Login failed: ${error.message}`);
+        setIsLoggingIn(false); // Reset login process state
       });
   };
 
-  if (isLoading) {
+  if (isLoading || isLoggingIn) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100">
         <div className="p-8 max-w-md w-full bg-white shadow-lg rounded-lg transform transition-all duration-300 hover:scale-105">
@@ -117,8 +126,8 @@ const LoginPage = () => {
             <p className="text-center text-lg">Name: {name}</p>
             <p className="text-center text-lg">Email: {email}</p>
             <p className="text-center text-lg">Department: {department}</p>
-            <p className="text-center text-lg">Role: {role}</p>
-            
+            <p className="text-center text-lg">Room No: {roomNo}</p>
+            <p className="text-center text-lg">Hall Name: {hallName}</p>
           </div>
         ) : (
           <>

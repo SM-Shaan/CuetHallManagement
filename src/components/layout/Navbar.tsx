@@ -1,10 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MessageSquare, Bell, Home, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom'; // Import Link for routing
 import AuthButtons from '../auth/AuthButtons';
 import DashboardIcon from '../icons/DashboardIcon';
 
 const Navbar = () => {
+  const [token, setToken] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    setToken(storedToken);
+
+    console.log('Stored token:', storedToken);
+    if (storedToken) {
+      fetch('https://localhost:7057/HomePage/GetHomePageData', {
+        method: 'GET',
+        headers: {
+          'content-type': 'application/json',
+          'Authorization': `Bearer ${storedToken}`,
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then((data) => {
+          if (data && data.imageData) {
+            setProfileImage(data.imageData);
+          }
+        })
+        .catch((error) => {
+          localStorage.removeItem('token');
+          console.error('Error fetching user data:', error);
+        });
+    }
+  }, []);
+
   return (
     <nav className="bg-indigo-600 text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4">
@@ -18,15 +52,9 @@ const Navbar = () => {
             <NavItem icon={<MessageSquare size={20} />} text="Complain" route="/complaints" />
             <NavItem icon={<Bell size={20} />} text="Notices" route="/notices" />
             <NavItem icon={<DollarSign size={20} />} text="Payment" route='/payment'/>
-            {/* <Link to="/login" className="hover:text-indigo-200 transition-colors duration-200">
-              Login
-            </Link>
-            <Link to="/signup" className="hover:text-indigo-200 transition-colors duration-200">
-              Sign Up
-            </Link> */}
           </div>
           <div className="hidden md:block">
-            <AuthButtons />
+            <AuthButtons token={token} profileImage={profileImage} />
           </div>
           <button className="md:hidden p-2 rounded-md hover:bg-indigo-700">
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -42,8 +70,8 @@ const Navbar = () => {
           <MobileNavItem icon={<MessageSquare size={20} />} text="Complain" route="/complaints" />
           <MobileNavItem icon={<Bell size={20} />} text="Notices" route="/notices" />
           <MobileNavItem icon={<DollarSign size={20} />} text="Payment" route='#' />
-          <div className="pt-4 flex flex-col space-y-2">
-            <AuthButtons />
+          <div className="pt-4 flex flex-col space-y-4 ml-20">
+            <AuthButtons token={token} profileImage={profileImage} />
           </div>
         </div>
       </div>
