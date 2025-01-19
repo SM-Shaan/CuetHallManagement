@@ -1,5 +1,7 @@
 declare module 'lucide-react' {
   // Add specific type declarations if needed, or use `any` for a quick fix
+  //Add LogOut icon door
+  export const LogOut: any;
   export const MessageSquare: any;
   export const Bell: any;
   export const Home: any;
