@@ -54,7 +54,7 @@ const RoomsPage = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-
+  
     fetch('https://localhost:7057/Room/GetRoomData', {
       method: 'GET',
       headers: {
@@ -62,19 +62,36 @@ const RoomsPage = () => {
         'Authorization': `Bearer ${token}`,
       },
     })
-      .then((response) => {
+      .then(async (response) => {
         if (!response.ok) {
+          const errorMessage = await response.text();
+          if (response.status === 401) {
+            window.location.href = '/login';
+            alert(`Unauthorized: ${errorMessage}`);
+            return;
+          }
+          if (response.status === 400) {
+            window.location.href = '/';
+
+            alert(`${errorMessage}`);
+            //setError(errorMessage);
+            setIsLoading(false);
+            return;
+          }
           throw new Error('Network response was not ok');
         }
         return response.json();
       })
-      .then((data: RoomsToShow[]) => {
+      .then((data: RoomsToShow[] | null) => {
+        if (data === null) {
+          throw new Error('No data available');
+        }
         setRooms(data);
         setIsLoading(false);
       })
       .catch((error) => {
         console.error('Error fetching rooms data:', error);
-        setError('No Rooms In Your Hall Or You are Not Allooted in a Hall');
+        setError(error.message);
         setIsLoading(false);
       });
   }, []);

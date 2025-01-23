@@ -1,52 +1,87 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Filter, Search, AlertCircle, MessageCircle, Paperclip, Camera, Calendar } from 'lucide-react';
 
-interface Complaint {
-  id: number;
-  title: string;
-  status: 'Pending' | 'In Progress' | 'Resolved';
-  date: string;
-  priority: 'Low' | 'Medium' | 'High';
-  category?: string;
-  location?: string;
-  description?: string;
-  attachments?: string[];
-  comments?: Array<{
-    id: number;
-    text: string;
-    date: string;
-    user: string;
-  }>;
+type comment = {
+  commentText: string,
+  complaintId: number,
+  commentedAt: string
+  commentedBy: string
 }
 
-const ComplaintsPage: React.FC = () => {
-  const [complaints, setComplaints] = useState<Complaint[]>([
-    {
-      id: 1,
-      title: 'Leaking pipe in washroom',
-      status: 'Pending',
-      date: '2024-03-15',
-      priority: 'High',
-      category: 'Plumbing',
-      location: 'Block A, Floor 2',
-      description: 'Water leaking from sink pipe causing floor damage',
-      comments: [
-        { id: 1, text: 'Maintenance team has been notified', date: '2024-03-15', user: 'Admin' }
-      ]
-    },
-    { id: 2, title: 'Noisy environment at night', status: 'Resolved', date: '2024-03-14', priority: 'Medium' },
-    { id: 3, title: 'Broken window in room 105', status: 'In Progress', date: '2024-03-13', priority: 'High' },
-  ]);
+type Complaints = {
+  complaintId: number,
+  title: string,
+  catagory: string,
+  priority: string,
+  status: string,
+  description: string,
+  location: string,
+  imageData: string,
+  fileData: string,
+  complaintDate: string,
+  comments: comment[]
+}
 
-  const [newComplaint, setNewComplaint] = useState('');
-  const [priority, setPriority] = useState<Complaint['priority']>('Medium');
-  const [filterStatus, setFilterStatus] = useState<'all' | Complaint['status']>('all');
+
+
+const ComplaintsPage: React.FC = () => {
+  const [complaints, setComplaints] = useState<Complaints[]>([]);
+  const [filterStatus, setFilterStatus] = useState<'all' | Complaints['status']>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [newComplaint, setNewComplaint] = useState('');
+  const [priority, setPriority] = useState<Complaints['priority']>('Medium');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedComplaint, setSelectedComplaint] = useState<Complaint | null>(null);
   const [newComment, setNewComment] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [fileData, setFileData] = useState<string | null>(null);
+  const [imageData, setImageData] = useState<string | null>(null);
+  const [formCategory, setFormCategory] = useState('all');
+  const [visibleComments, setVisibleComments] = useState<{ [key: number]: boolean }>({});
+  const [commentInputs, setCommentInputs] = useState<{ [key: number]: string }>({});
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    // Fetch complaints data from the backend
+    fetch('https://localhost:7057/Complaint/GetComplaints', {
+      method: 'GET',
+      headers: {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          if (response.status === 401) {
+            window.location.href = '/login';
+            alert(`Unauthorized: ${errorMessage}`);
+            return;
+          }
+          if (response.status === 400) {
+            window.location.href = '/';
+            alert(`${errorMessage}`);
+            setIsLoading(false);
+            return;
+          }
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then((data: Complaints[] | null) => {
+        if (data === null) {
+          throw new Error('No data available');
+        }
+        setComplaints(data);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching complaints data:', error);
+        setIsLoading(false);
+      });
+  }, []);
 
   const categories = [
     'Plumbing',
@@ -63,61 +98,163 @@ const ComplaintsPage: React.FC = () => {
     const matchesStatus = filterStatus === 'all' || complaint.status === filterStatus;
     const matchesSearch = complaint.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          complaint.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || complaint.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || complaint.catagory === selectedCategory;
     return matchesStatus && matchesSearch && matchesCategory;
   });
 
   const handleSubmitComplaint = () => {
-    if (newComplaint.trim() === '') {
-      alert('Please enter a complaint title before submitting.');
+    if (!newComplaint.trim() || !location.trim() || !description.trim() || formCategory === 'all') {
+      alert('Please fill in all required fields and select a category');
       return;
     }
 
-    const newEntry: Complaint = {
-      id: complaints.length + 1,
+    const token = localStorage.getItem('token');
+    const complaintData = {
       title: newComplaint,
-      status: 'Pending',
-      date: new Date().toISOString().split('T')[0],
+      catagory: formCategory,
       priority,
-      category: selectedCategory !== 'all' ? selectedCategory : undefined,
       location,
       description,
-      comments: [],
-      attachments: []
+      fileData,
+      imageData,
     };
-    setComplaints([...complaints, newEntry]);
-    resetForm();
+
+    fetch('https://localhost:7057/Complaint/AddComplaint', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(complaintData),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          if (response.status === 401) {
+            window.location.href = '/login';
+            alert(`Unauthorized: Please Login First`);
+            return;
+          }
+          if (response.status === 400) {
+            alert(`${errorMessage}`);
+            resetForm();
+            return;
+          }
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then((data: Complaints) => {
+        if(data)
+        {
+          alert('Complaint submitted successfully!');
+          setComplaints(complaints=>[...complaints, data]);
+          resetForm();
+          return;
+        }
+        //return;
+      })
+      .catch((error) => {
+        console.error('Error submitting complaint:', error);
+      });
   };
 
   const resetForm = () => {
     setNewComplaint('');
     setPriority('Medium');
-    setSelectedCategory('all');
+    setFormCategory('all');
     setLocation('');
     setDescription('');
+    setFileData(null);
+    setImageData(null);
   };
 
   const handleAddComment = (complaintId: number) => {
-    if (!newComment.trim()) return;
-    
-    setComplaints(complaints.map(complaint => {
-      if (complaint.id === complaintId) {
-        return {
-          ...complaint,
-          comments: [...(complaint.comments || []), {
-            id: Date.now(),
-            text: newComment,
-            date: new Date().toISOString().split('T')[0],
-            user: 'User' // Replace with actual user name from auth
-          }]
-        };
-      }
-      return complaint;
-    }));
-    setNewComment('');
+    const newComment = commentInputs[complaintId];
+    if (!newComment?.trim()) return;
+  
+    const token = localStorage.getItem('token');
+    const commentData = {
+      complaintId,
+      commentText: newComment,
+    };
+  
+    fetch(`https://localhost:7057/Complaint/AddComment/${complaintId}`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(commentData),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          if (response.status === 401) {
+            window.location.href = '/login';
+            alert(`Unauthorized: Please Login First`);
+            return;
+          }
+          if (response.status === 400) {
+            alert(`${errorMessage}`);
+            return;
+          }
+          throw new Error('Network response was not ok');
+        }
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          return response.json();
+        } else {
+          return response.text();
+        }
+      })
+      .then((data) => {
+        if(data)
+        {
+        const updatedComplaints = complaints.map(complaint => {
+          if (complaint.complaintId === complaintId) {
+            return {
+              ...complaint,
+              comments: [...complaint.comments, data],
+            };
+          }
+          return complaint;
+        });
+        setComplaints(updatedComplaints);
+        setCommentInputs(prevState => ({
+          ...prevState,
+          [complaintId]: ''
+        }));
+        // setVisibleComments(prevState => ({
+        //   ...prevState,
+        //   [complaintId]: true
+        // }));
+        //window.location.reload();
+        
+  }})
+      
+      .catch((error) => {
+        console.error('Error adding comment:', error);
+      });
   };
 
-  const getStatusColor = (status: Complaint['status']): string => {
+  const toggleCommentsVisibility = (complaintId: number) => {
+    setVisibleComments(prevState => ({
+      ...prevState,
+      [complaintId]: !prevState[complaintId]
+    }));
+  };
+
+  const openImageModal = (imageData: string) => {
+    setSelectedImage(imageData);
+    setIsImageModalOpen(true);
+  };
+  const closeImageModal = () => {
+    setSelectedImage(null);
+    setIsImageModalOpen(false);
+  };
+
+  const getStatusColor = (status: Complaints['status']): string => {
     switch (status) {
       case 'Resolved':
         return 'bg-green-100 text-green-800 border-green-200';
@@ -128,14 +265,46 @@ const ComplaintsPage: React.FC = () => {
     }
   };
 
-  const getPriorityBadge = (priority: Complaint['priority']): string => {
-    const colors: Record<Complaint['priority'], string> = {
+  const getPriorityBadge = (priority: Complaints['priority']): string => {
+    const colors: Record<Complaints['priority'], string> = {
       High: 'bg-red-100 text-red-800',
       Medium: 'bg-yellow-100 text-yellow-800',
       Low: 'bg-green-100 text-green-800',
     };
     return colors[priority];
   };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFileData(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files ? e.target.files[0] : null;
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageData(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="p-8 max-w-md w-full bg-white shadow-lg rounded-lg">
+          <h1 className="text-3xl font-bold text-center mb-6">Loading...</h1>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 p-6">
@@ -160,7 +329,7 @@ const ComplaintsPage: React.FC = () => {
             <div className="flex gap-4">
               <select
                 value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as 'all' | Complaint['status'])}
+                onChange={(e) => setFilterStatus(e.target.value as 'all' | Complaints['status'])}
                 className="p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="all">All Status</option>
@@ -196,7 +365,7 @@ const ComplaintsPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <select
                 value={priority}
-                onChange={(e) => setPriority(e.target.value as Complaint['priority'])}
+                onChange={(e) => setPriority(e.target.value as Complaints['priority'])}
                 className="p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="Low">Low Priority</option>
@@ -204,8 +373,8 @@ const ComplaintsPage: React.FC = () => {
                 <option value="High">High Priority</option>
               </select>
               <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                value={formCategory}
+                onChange={(e) => setFormCategory(e.target.value)}
                 className="p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="all">Select Category</option>
@@ -229,20 +398,38 @@ const ComplaintsPage: React.FC = () => {
               rows={4}
             />
             <div className="flex gap-4">
-              <button
-                type="button"
-                className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50"
-              >
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={handleFileChange}
+                className="hidden"
+                id="fileInput"
+              />
+              <label htmlFor="fileInput" className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 cursor-pointer">
                 <Paperclip size={20} />
                 Attach File
-              </button>
-              <button
-                type="button"
-                className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50"
-              >
+              </label>
+              {fileData && (
+                <div className="text-sm text-gray-600 mt-2">
+                  File attached: {fileData.substring(fileData.indexOf(',') + 1, fileData.indexOf(',') + 20)}...
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+                id="imageInput"
+              />
+              <label htmlFor="imageInput" className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50 cursor-pointer">
                 <Camera size={20} />
                 Add Photo
-              </button>
+              </label>
+              {imageData && (
+                <div className="mt-2">
+                  <img src={imageData} alt="Selected" className="h-20 w-20 object-cover rounded-lg" />
+                </div>
+              )}
             </div>
             <div className="flex justify-end gap-4">
               <button
@@ -265,7 +452,7 @@ const ComplaintsPage: React.FC = () => {
         <div className="space-y-4">
           {filteredComplaints.map((complaint) => (
             <div
-              key={complaint.id}
+              key={complaint.complaintId}
               className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-200"
             >
               <div className="flex justify-between items-start mb-4">
@@ -274,16 +461,16 @@ const ComplaintsPage: React.FC = () => {
                   <div className="flex flex-wrap gap-2 items-center text-sm text-gray-600">
                     <span className="flex items-center gap-1">
                       <Calendar size={16} />
-                      {complaint.date}
+                      {complaint.complaintDate}
                     </span>
                     {complaint.location && (
                       <span className="flex items-center gap-1">
                         • Location: {complaint.location}
                       </span>
                     )}
-                    {complaint.category && (
+                    {complaint.catagory && (
                       <span className="flex items-center gap-1">
-                        • Category: {complaint.category}
+                        • Category: {complaint.catagory}
                       </span>
                     )}
                   </div>
@@ -301,43 +488,106 @@ const ComplaintsPage: React.FC = () => {
               {complaint.description && (
                 <p className="text-gray-600 mb-4">{complaint.description}</p>
               )}
+             {complaint.imageData && (
+  <div className="mt-2">
+    <img
+      src={`data:image/jpeg;base64,${complaint.imageData}`}
+      alt="Complaint"
+      className="h-40 w-40 object-cover rounded-lg cursor-pointer"
+      onClick={() => openImageModal(complaint.imageData)}
+    />
+  </div>
+)}
 
+{complaint.fileData && (
+  <div className="mt-2 flex items-center gap-4">
+    <a
+      href={URL.createObjectURL(new Blob([Uint8Array.from(atob(complaint.fileData), c => c.charCodeAt(0))], { type: 'application/pdf' }))}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-indigo-600 hover:underline flex items-center gap-2"
+    >
+      <span>View Attached PDF</span>
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 001 1h2a1 1 0 100-2h-1V7z" clipRule="evenodd" />
+      </svg>
+    </a>
+    <a
+      href={URL.createObjectURL(new Blob([Uint8Array.from(atob(complaint.fileData), c => c.charCodeAt(0))], { type: 'application/pdf' }))}
+      download={`${complaint.title}.pdf`}
+      className="text-indigo-600 hover:underline flex items-center gap-2"
+    >
+      <span>Download PDF</span>
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 001 1h2a1 1 0 100-2h-1V7z" clipRule="evenodd" />
+      </svg>
+    </a>
+  </div>
+)}
               {/* Comments Section */}
               <div className="mt-4 pt-4 border-t">
-                <h4 className="font-semibold mb-2">Comments</h4>
-                <div className="space-y-2">
-                  {complaint.comments?.map(comment => (
-                    <div key={comment.id} className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-sm">{comment.text}</p>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {comment.user} • {comment.date}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-3 flex gap-2">
-                  <input
-                    type="text"
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Add a comment..."
-                    className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                  />
-                  <button
-                    onClick={() => handleAddComment(complaint.id)}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                  >
-                    Comment
-                  </button>
-                </div>
-              </div>
+              <button
+                  onClick={() => toggleCommentsVisibility(complaint.complaintId)}
+                  className="text-indigo-600 hover:underline"
+              >
+              {complaint.comments && visibleComments[complaint.complaintId] ? 'Hide Comments' : `Show Comments ${complaint.comments ? complaint.comments.length : 0}`}
+              </button>
+              {visibleComments[complaint.complaintId] && (
+                <div className="space-y-2 mt-2">
+                  <h4 className="font-semibold mb-2">Comments</h4>
+      {complaint.comments?.map((comment, index) => (
+        <div key={index} className="bg-gray-50 p-3 rounded-lg">
+          <p className="text-sm">{comment.commentText}</p>
+          <div className="text-xs text-gray-500 mt-1">
+            At {comment.commentedAt} by {comment.commentedBy}
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+  <div className="mt-3 flex gap-2">
+  <input
+  type="text"
+  value={commentInputs[complaint.complaintId] || ''}
+  onChange={(e) => setCommentInputs({
+    ...commentInputs,
+    [complaint.complaintId]: e.target.value
+  })}
+  placeholder="Add a comment..."
+  className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+
+/>
+    <button
+      onClick={() => handleAddComment(complaint.complaintId)}
+      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+    >
+      Comment
+    </button>
+  </div>
+</div>
             </div>
           ))}
         </div>
+        {isImageModalOpen && selectedImage && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="relative bg-white p-4 rounded-lg shadow-lg max-w-2xl w-full">
+      <button
+        className="absolute top-1 right-1 text-gray-600 hover:text-gray-800"
+        onClick={closeImageModal}
+      >
+        &times;
+      </button>
+      <img
+        src={`data:image/jpeg;base64,${selectedImage}`}
+        alt="Complaint"
+        className="max-h-[80vh] w-full object-cover rounded-lg"
+      />
+    </div>
+  </div>
+)}
       </div>
     </div>
   );
 };
 
 export default ComplaintsPage;
-
