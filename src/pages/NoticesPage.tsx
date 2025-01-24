@@ -1,44 +1,67 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import NoticeItem from '../components/notices/NoticeItem';
 
+type Notice = {
+  noticeId: number;
+  title: string;
+  date: string;
+  description: string;
+  noticeType: 'maintenance' | 'events' | 'updates';
+  priority: boolean;
+  isRead: boolean;
+};
+
 const NoticesPage = () => {
+  const [notices, setNotices] = useState<Notice[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const noticesPerPage = 5;
 
-  const notices = [
-    {
-      title: 'Maintenance Notice',
-      date: 'October 10, 2023',
-      description: 'The hall will undergo maintenance on October 15th. Please ensure all personal belongings are secured.',
-      type: 'maintenance' as 'maintenance',
-    },
-    {
-      title: 'Dining Hall Closure',
-      date: 'October 8, 2023',
-      description: 'The dining hall will be closed on October 12th for a private event. Alternative dining options will be available.',
-      type: 'events' as 'events',
-    },
-    {
-      title: 'Fire Drill',
-      date: 'October 5, 2023',
-      description: 'A fire drill is scheduled for October 20th at 10 AM. Participation is mandatory for all residents.',
-      type: 'updates' as 'updates',
-    },
-    // Add more notices as needed
-  ];
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    fetch(`https://localhost:7057/Notice/GetNotices?pageNumber=${currentPage}&pageSize=${noticesPerPage}&filter=${filter}&searchTerm=${searchTerm}`, {
+      method: 'GET',
+      headers: {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          if (response.status === 401) {
+            window.location.href = '/login';
+            alert(`Unauthorized: Login First`);
+            return;
+          }
+          if (response.status === 400) {
+            window.location.href = '/';
+            alert(`${errorMessage}`);
+            return;
+          }
+          throw new Error('Network response was not ok');
+        }
+        setTotalPages(parseInt(response.headers.get('X-Total-Pages') || '1', 10));
+        return response.json();
+      })
+      .then((data: Notice[]) => {
+        if (!data || data.length === 0) {
+          setNotices([]);
+        } else {
+          setNotices(data);
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching notices data:', error);
+        setNotices([]);
+      });
+  }, [currentPage, noticesPerPage, filter, searchTerm]);
 
-  const filteredNotices = notices.filter((notice) => {
-    return (
-      (filter === 'all' || notice.type === filter) &&
-      notice.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  });
-
-  const indexOfLastNotice = currentPage * noticesPerPage;
-  const indexOfFirstNotice = indexOfLastNotice - noticesPerPage;
-  const currentNotices = filteredNotices.slice(indexOfFirstNotice, indexOfLastNotice);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentPage]);
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
@@ -67,19 +90,25 @@ const NoticesPage = () => {
         </select>
       </div>
       <div className="max-w-4xl mx-auto">
-        {currentNotices.map((notice, index) => (
-          <NoticeItem
-            key={index}
-            title={notice.title}
-            date={notice.date}
-            description={notice.description}
-            type={notice.type}
-            onClick={() => alert(`Viewing details for: ${notice.title}`)}
-          />
-        ))}
+        {notices.length === 0 ? (
+          <p className="text-center text-gray-500">No notices found.</p>
+        ) : (
+          notices.map((notice, index) => (
+            <NoticeItem
+              key={index}
+              noticeId={notice.noticeId}
+              title={notice.title}
+              date={notice.date}
+              description={notice.description}
+              noticeType={notice.noticeType}
+              isFavorite={notice.priority}
+              isRead={notice.isRead}
+            />
+          ))
+        )}
       </div>
       <div className="flex justify-center mt-4">
-        {Array.from({ length: Math.ceil(filteredNotices.length / noticesPerPage) }, (_, i) => (
+        {Array.from({ length: totalPages+1 }, (_, i) => (
           <button
             key={i}
             onClick={() => paginate(i + 1)}
