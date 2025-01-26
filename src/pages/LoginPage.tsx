@@ -38,7 +38,6 @@ const LoginPage = () => {
             setName(data.name);
             setDepartment(data.department);
             setImageData(data.imageData);
-            //alert(data.roomNo);
             setRoomNo(data.roomNo);
             setHallName(data.hallName);
             setIsLoggedIn(true);
@@ -110,25 +109,63 @@ const LoginPage = () => {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100">
       <div className="p-8 max-w-md w-full bg-white shadow-lg rounded-lg transform transition-all duration-300 hover:scale-105">
         {isLoggedIn ? (
-          <div>
-            <h1 className="text-3xl font-bold text-center mb-6 text-indigo-800">User Details</h1>
-            {imageData && (
-              <img
-                src={`data:image/jpeg;base64,${imageData}`}
-                alt="User"
-                className="mx-auto mt-4 rounded-full w-40 h-40 object-cover"
-                onError={(e) => {
-                  console.error('Error loading image:', e);
-                  e.currentTarget.src = 'default-image-path'; // Fallback image
-                }}
-              />
-            )}
-            <p className="text-center text-lg">Name: {name}</p>
-            <p className="text-center text-lg">Email: {email}</p>
-            <p className="text-center text-lg">Department: {department}</p>
-            <p className="text-center text-lg">Room No: {roomNo}</p>
-            <p className="text-center text-lg">Hall Name: {hallName}</p>
+        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="p-8 w-full max-w-2xl bg-white shadow-lg rounded-lg">
+          <h1 className="text-4xl font-bold mb-6 text-gray-800 text-center">User Profile</h1>
+          {imageData && (
+            <img
+              src={`data:image/jpeg;base64,${imageData}`}
+              alt="User"
+              className="mx-auto mt-4 rounded-full w-40 h-40 object-cover shadow-md border border-gray-300"
+              onError={(e) => {
+                console.error('Error loading image:', e);
+                e.currentTarget.src = 'default-image-path'; // Fallback image
+              }}
+            />
+          )}
+          <div className="mt-8 space-y-6">
+            <div className="p-4 border border-gray-200 rounded-lg shadow-sm">
+              <p className="text-sm font-semibold text-gray-600">Name</p>
+              <p className="text-lg font-bold text-gray-800">{name}</p>
+            </div>
+            <div className="p-4 border border-gray-200 rounded-lg shadow-sm">
+              <p className="text-sm font-semibold text-gray-600">Email</p>
+              <p className="text-lg font-bold text-gray-800">{email}</p>
+            </div>
+            <div className="p-4 border border-gray-200 rounded-lg shadow-sm">
+              <p className="text-sm font-semibold text-gray-600">Department</p>
+              <p className="text-lg font-bold text-gray-800">{department}</p>
+            </div>
+            <div className="p-4 border border-gray-200 rounded-lg shadow-sm">
+              <p className="text-sm font-semibold text-gray-600">Room No</p>
+              <p className="text-lg font-bold text-gray-800">{roomNo}</p>
+            </div>
+            <div className="p-4 border border-gray-200 rounded-lg shadow-sm">
+              <p className="text-sm font-semibold text-gray-600">Hall Name</p>
+              <p className="text-lg font-bold text-gray-800">{hallName}</p>
+            </div>
           </div>
+          <div className="mt-8 flex justify-center space-x-4">
+            <button
+              onClick={() => {
+                localStorage.removeItem('token'); // Remove token
+                setIsLoggedIn(false); // Log out
+                window.location.href = '/login'; // Redirect to login page
+              }}
+              className="py-2 px-4 bg-red-500 text-white font-bold rounded-lg shadow-sm hover:bg-red-600 transition"
+            >
+              Logout
+            </button>
+            <button
+              onClick={() => alert('Edit Profile functionality is under development.')}
+              className="py-2 px-4 bg-blue-500 text-white font-bold rounded-lg shadow-sm hover:bg-blue-600 transition"
+            >
+              Edit Profile
+            </button>
+          </div>
+        </div>
+      </div>
+      
         ) : (
           <>
             <h1 className="text-3xl font-bold text-center mb-6 text-indigo-800">Login</h1>

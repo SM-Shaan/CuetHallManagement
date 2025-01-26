@@ -3,17 +3,27 @@ import { MessageSquare, Bell, Home, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom'; // Import Link for routing
 import AuthButtons from '../auth/AuthButtons';
 import DashboardIcon from '../icons/DashboardIcon';
+import {jwtDecode} from 'jwt-decode';
 
 const Navbar = () => {
   const [token, setToken] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
+
+  // const storedToken = localStorage.getItem('token');
+  // setToken(storedToken);
+  
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     setToken(storedToken);
-
     console.log('Stored token:', storedToken);
+
+
     if (storedToken) {
+      const decodedToken: any = jwtDecode(storedToken);
+      setRole(decodedToken.role);
+      console.log('Role:', decodedToken.role);
       fetch('https://localhost:7057/HomePage/GetHomePageData', {
         method: 'GET',
         headers: {
@@ -30,6 +40,7 @@ const Navbar = () => {
         .then((data) => {
           if (data && data.imageData) {
             setProfileImage(data.imageData);
+            console.log('Profile image data:', data.imageData);
           }
         })
         .catch((error) => {
@@ -47,7 +58,9 @@ const Navbar = () => {
             Hall Management
           </Link>
           <div className="hidden md:flex space-x-8">
-            <NavItem icon={<DashboardIcon size={20} />} text="Dashboard" route="/manager" />
+           {role === 'HallAdmin' ? <NavItem icon={<DashboardIcon size={20} />} text="Dashboard" route="/manager" /> : null}
+           
+            {/* <NavItem icon={<DashboardIcon size={20} />} text="Dashboard" route="/manager" /> */}
             <NavItem icon={<Home size={20} />} text="Rooms" route="/rooms" />
             <NavItem icon={<MessageSquare size={20} />} text="Complain" route="/complaints" />
             <NavItem icon={<Bell size={20} />} text="Notices" route="/notices" />
@@ -70,10 +83,16 @@ const Navbar = () => {
           <MobileNavItem icon={<MessageSquare size={20} />} text="Complain" route="/complaints" />
           <MobileNavItem icon={<Bell size={20} />} text="Notices" route="/notices" />
           <MobileNavItem icon={<DollarSign size={20} />} text="Payment" route='#' />
-          <div className="pt-4 flex flex-col space-y-4 ml-20">
-            <AuthButtons token={token} profileImage={profileImage} />
-          </div>
+          {
+            profileImage ? (
+              <div className="pt-4 flex flex-col space-y-4 ml-20">
+              <AuthButtons token={token} profileImage={profileImage} />
+            </div>
+           ) : null
+          }
         </div>
+             
+          
       </div>
     </nav>
   );

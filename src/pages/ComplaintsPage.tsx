@@ -148,7 +148,7 @@ const ComplaintsPage: React.FC = () => {
         if(data)
         {
           alert('Complaint submitted successfully!');
-          setComplaints(complaints=>[...complaints, data]);
+          setComplaints(complaints=>[data,...complaints]);
           resetForm();
           return;
         }

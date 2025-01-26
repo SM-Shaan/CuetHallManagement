@@ -1,9 +1,22 @@
-import React from 'react';
+import React, {useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import DashboardIcon from '../icons/DashboardIcon';
+import {jwtDecode} from 'jwt-decode';
 
 const Hero = () => {
+  // const [token, setToken] = useState<string | null>(null);
+  // const [role, setRole] = useState<string | null>(null);
+
+  // const Token=localStorage.getItem('token');
+  //   setToken(Token);
+  //   if(Token)
+  //   {
+  //     const decodedToken: any = jwtDecode(Token);
+  //           setRole(decodedToken.role);
+  //   }
+  
+
   return (
     <div className="relative bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white overflow-hidden">
       <div className="absolute inset-0">
@@ -19,15 +32,17 @@ const Hero = () => {
             Access all services and information in one place.
           </p>
           <div className="mt-10 flex justify-center gap-4">
-            <button className="group bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition-all duration-300 transform hover:scale-105">
+            <Link to='/rooms' className="group bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition-all duration-300 transform hover:scale-105">
               View Rooms
               <ArrowRight className="inline-block ml-2 transform group-hover:translate-x-1 transition-transform duration-200" size={20} />
-            </button>
-            <button className="group border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition-all duration-300 transform hover:scale-105">
-              Submit Complaint
+            </Link>
+            <button onClick={() => window.location.href = '/complaints'} className="group border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition-all duration-300 transform hover:scale-105">
+              Complaint
               <ArrowRight className="inline-block ml-2 transform group-hover:translate-x-1 transition-transform duration-200" size={20} />
             </button>
           </div>
+
+          
           <div className="flex gap-4 mt-8">
             <Link
               to="/manager"
