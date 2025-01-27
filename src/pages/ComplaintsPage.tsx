@@ -42,46 +42,62 @@ const ComplaintsPage: React.FC = () => {
   const [commentInputs, setCommentInputs] = useState<{ [key: number]: string }>({});
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    // Fetch complaints data from the backend
-    fetch('https://localhost:7057/Complaint/GetComplaints', {
-      method: 'GET',
-      headers: {
-        'content-type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+  const [pageNumber, setPageNumber] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
+ useEffect(() => {
+  const token = localStorage.getItem('token');
+  setIsLoading(true);
+  fetch(`https://localhost:7057/Complaint/GetComplaints?pageNumber=${pageNumber}&pageSize=5`, {
+    method: 'GET',
+    headers: {
+      'content-type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        if (response.status === 401) {
+          window.location.href = '/login';
+          alert(`Unauthorized: ${errorMessage}`);
+          return;
+        }
+        if (response.status === 400) {
+          window.location.href = '/';
+          alert(`${errorMessage}`);
+          setIsLoading(false);
+          return;
+        }
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
     })
-      .then(async (response) => {
-        if (!response.ok) {
-          const errorMessage = await response.text();
-          if (response.status === 401) {
-            window.location.href = '/login';
-            alert(`Unauthorized: ${errorMessage}`);
-            return;
-          }
-          if (response.status === 400) {
-            window.location.href = '/';
-            alert(`${errorMessage}`);
-            setIsLoading(false);
-            return;
-          }
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then((data: Complaints[] | null) => {
-        if (data === null) {
-          throw new Error('No data available');
-        }
-        setComplaints(data);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.error('Error fetching complaints data:', error);
-        setIsLoading(false);
-      });
-  }, []);
+    .then((data: Complaints[] | null) => {
+      if (data === null) {
+        throw new Error('No data available');
+      }
+      setComplaints((prevComplaints) => [...prevComplaints, ...data]);
+      setHasMore(data.length > 0);
+      setIsLoading(false);
+    })
+    .catch((error) => {
+      console.error('Error fetching complaints data:', error);
+      setIsLoading(false);
+    });
+}, [pageNumber]);
+
+useEffect(() => {
+  const handleScroll = () => {
+    if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || isLoading || !hasMore) {
+      return;
+    }
+    setPageNumber((prevPageNumber) => prevPageNumber + 1);
+  };
+
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, [isLoading, hasMore]);
 
   const categories = [
     'Plumbing',
@@ -225,12 +241,6 @@ const ComplaintsPage: React.FC = () => {
           ...prevState,
           [complaintId]: ''
         }));
-        // setVisibleComments(prevState => ({
-        //   ...prevState,
-        //   [complaintId]: true
-        // }));
-        //window.location.reload();
-        
   }})
       
       .catch((error) => {
@@ -311,45 +321,7 @@ const ComplaintsPage: React.FC = () => {
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold text-indigo-800 mb-6">Complaint Management</h1>
         
-        {/* Search and Filter Bar */}
-        <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-          <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search complaints..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as 'all' | Complaints['status'])}
-                className="p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="all">All Status</option>
-                <option value="Pending">Pending</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Resolved">Resolved</option>
-              </select>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="all">All Categories</option>
-                {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
+       
 
         {/* Submission Form */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
@@ -444,6 +416,45 @@ const ComplaintsPage: React.FC = () => {
               >
                 Submit Complaint
               </button>
+            </div>
+          </div>
+        </div>
+         {/* Search and Filter Bar */}
+         <div className="bg-white p-4 rounded-lg shadow-md mb-6">
+          <div className="flex flex-wrap gap-4">
+            <div className="flex-1 min-w-[200px]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  placeholder="Search complaints..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value as 'all' | Complaints['status'])}
+                className="p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="all">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Resolved">Resolved</option>
+              </select>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="all">All Categories</option>
+                {categories.map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
@@ -585,6 +596,8 @@ const ComplaintsPage: React.FC = () => {
     </div>
   </div>
 )}
+{isLoading && <p className="text-center mt-4">Loading...</p>}
+{!hasMore && <p className="text-center mt-4">No more complaints to load</p>}
       </div>
     </div>
   );
