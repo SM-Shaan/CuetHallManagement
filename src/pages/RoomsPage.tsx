@@ -22,6 +22,8 @@ type RoomsToShow = {
   hasSeats: number;
   occupiedSeats: number;
   available: number;
+  isAlloted: boolean;
+  isRequested: boolean;
   students: Student[];
 };
 
@@ -97,11 +99,106 @@ const RoomsPage = () => {
   }, []);
 
   const handleApply = (roomNumber: string) => {
-    setSelectedRoom(roomNumber);
+    //setSelectedRoom(roomNumber);
+    //ask for confirmation option yes or no
+    if (!window.confirm(`Are you sure you want to apply for Room ${roomNumber}?`)) {
+      return;
+    }
+    
+
+
+    const token = localStorage.getItem('token');
+    fetch(`https://localhost:7057/Room/Apply/${roomNumber}`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'applications/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ roomNumber }),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          if (response.status === 401) {
+            window.location.href = '/login';
+            alert(`Unauthorized: Login First`);
+            return;
+          }
+          if (response.status === 400) {
+            alert(`${errorMessage}`);
+            return;
+          }
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if(data){
+        //window.location.reload();
+        const updatedRooms = rooms.map((room) => {
+          if (room.roomNo === roomNumber) {
+            return { ...room, isRequested: true };
+          }
+          return room;
+        });
+        setRooms(updatedRooms);
+        return;
+      }})
+      .catch((error) => {
+        console.error('Error applying room:', error);
+        alert(error.message);
+      });
   };
 
   const closeForm = () => {
     setSelectedRoom(null);
+  };
+
+  const handleCancelRequest = (roomNumber: string) => {
+
+    const token = localStorage.getItem('token');
+    fetch(`https://localhost:7057/Room/CancelRequest/${roomNumber}`, {
+      method: 'DELETE',
+      headers: {
+        'content-type': 'applications/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ roomNumber }),
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          if (response.status === 401) {
+            window.location.href = '/login';
+            alert(`Unauthorized: Login First`);
+            return;
+          }
+          if (response.status === 400) {
+            alert(`${errorMessage}`);
+            return;
+          }
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if(data){
+        //window.location.reload();
+        const updatedRooms = rooms.map((room) => {
+          if (room.roomNo === roomNumber) {
+            return { ...room, isRequested: false };
+          }
+          return room;
+        });
+        setRooms(updatedRooms);
+        alert("Request Cancelled Successfully");
+        }
+        return;
+      })
+      .catch((error) => {
+        console.error('Error cancelling request:', error);
+        alert(error.message);
+      });
   };
 
   const handleStudentClick = (student: Student) => {
@@ -190,14 +287,30 @@ const RoomsPage = () => {
                 <li className="text-gray-700">No student</li>
               )}
             </ul>
-            {room.available > 0 && (
-              <button
-                onClick={() => handleApply(room.roomNo)}
-                className="mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-              >
-                Apply
-              </button>
-            )}
+            {room.isAlloted ? (
+  <p className="text-green-700 font-bold">Alloted</p>
+) : (
+  <>
+    {room.isRequested ? (
+      <>
+        
+        <button
+          onClick={() => handleCancelRequest(room.roomNo)}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 mt-2"
+        >
+          <p className="text-white-700 font-bold">Cancel Request</p>
+        </button>
+      </>
+    ) : (
+      <button
+        onClick={() => handleApply(room.roomNo)}
+        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+      >
+        Apply
+      </button>
+    )}
+  </>
+)}
           </div>
         ))}
       </div>

@@ -40,7 +40,7 @@ const Navbar = () => {
         .then((data) => {
           if (data && data.imageData) {
             setProfileImage(data.imageData);
-            console.log('Profile image data:', data.imageData);
+            //console.log('Profile image data:', data.imageData);
           }
         })
         .catch((error) => {
