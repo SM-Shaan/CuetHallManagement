@@ -8,6 +8,7 @@ type comment = {
   commentedBy: string
 }
 
+
 type Complaints = {
   complaintId: number,
   title: string,
