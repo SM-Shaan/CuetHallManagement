@@ -14,6 +14,7 @@ import NoticesPage from './pages/NoticesPage';
 import PaymentPage from './pages/PaymentPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import AddHall from '../Checker/AddHall';
 
 function App() {
   return (
@@ -42,6 +43,8 @@ function App() {
               <Route path="/payment" element={<PaymentPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
+              <Route path="/add-hall" element={<AddHall/>} />
+
             </Routes>
           </main>
           <ChatWidget />
