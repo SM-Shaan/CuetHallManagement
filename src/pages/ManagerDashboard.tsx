@@ -33,34 +33,7 @@ const renderStars = (rating: number) => {
   return stars;
 };
 
-interface DashboardStats {
-  totalStudents: number;
-  occupiedRooms: number;
-  availableRooms: number;
-  pendingComplaints: number;
-  totalNotices: number;
-  monthlyRevenue: number;
-}
 
-interface RecentActivity {
-  id: number;
-  type: 'complaint' | 'payment' | 'room' | 'notice';
-  description: string;
-  timestamp: string;
-  status: string;
-}
-
-interface Complaint {
-  id: number;
-  title: string;
-  description: string;
-  studentName: string;
-  roomNumber: string;
-  status: 'pending' | 'in-progress' | 'resolved';
-  priority: 'high' | 'medium' | 'low';
-  createdAt: string;
-  category: 'maintenance' | 'facility' | 'roommate' | 'other';
-}
 
 type Complaints = {
   complaintId: number,
@@ -152,8 +125,6 @@ const ManagerDashboard: React.FC = () => {
 
 
 
-
-
   const handleNavigationClick = (id: DashboardSection) => {
     setSelectedSection(id);
     setIsMobileMenuOpen(false);
@@ -166,30 +137,6 @@ const ManagerDashboard: React.FC = () => {
     { id: 'notices', label: 'Notice Management', icon: Bell },
     { id: 'complaints', label: 'Complaint Box', icon: AlertCircle },
     { id: 'settings', label: 'Settings', icon: Settings }
-  ];
-
-  const stats: DashboardStats = {
-    totalStudents: 450,
-    occupiedRooms: 200,
-    availableRooms: 50,
-    pendingComplaints: 15,
-    totalNotices: 8,
-    monthlyRevenue: 150000
-  };
-
-  const complaints: Complaint[] = [
-    {
-      id: 1,
-      title: "AC Not Working",
-      description: "The air conditioner in room 101 is not cooling properly",
-      studentName: "John Doe",
-      roomNumber: "101",
-      status: "pending",
-      priority: "high",
-      createdAt: "2024-03-15",
-      category: "maintenance"
-    },
-    // Add more complaints...
   ];
 
 
