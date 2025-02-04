@@ -1,85 +1,298 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Users, Search, Filter, Download, UserPlus, Edit, Trash2,
   Mail, Phone, Calendar, BookOpen, Home, AlertCircle, CheckCircle
 } from 'lucide-react';
+//import { MoveDiagonal } from 'lucide-react';
+import Modal, { Styles } from 'react-modal';
 
-interface Student {
-  id: number;
+Modal.setAppElement('#root');
+
+const modalStyles: Styles = {
+  content: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    backgroundColor: 'white',
+    padding: '20px',
+    borderRadius: '8px',
+    maxWidth: '500px',
+    width: '60%',
+    border: 'none',
+    height: 'auto',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  },
+  overlay: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1000,
+  },
+};
+
+
+
+type StudentToShow={
+  studentId: number;
   name: string;
-  studentId: string;
-  photo: string;
-  department: string;
-  year: string;
-  room: string;
   email: string;
-  phone: string;
-  guardianName: string;
-  guardianPhone: string;
-  address: string;
-  joinDate: string;
-  status: 'Active' | 'Inactive' | 'Alumni';
-  paymentStatus: 'Paid' | 'Pending' | 'Overdue';
-  attendance: number;
+  department: string;
+  batch: Number;
+  roomNo: string;
+  paymentStatus: string;
+  isActive: boolean;
+  image: string;
+}
+
+type StudentManagementPage={
+  totalStudents: number,
+  paymentDue: number,
+  activeStudents: number,
+  dinningAttendenceInPercent: number,
+  students: StudentToShow[]
+}
+
+type AvailableRooms={
+  roomNo: string;
+  totalSeats: number;
+  availableSeats: number;
 }
 
 const StudentManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('all');
-  const [filterYear, setFilterYear] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [view, setView] = useState<'grid' | 'list'>('grid');
+  const [filterBatch, setFilterBatch] = useState('');
+  const [studentManagementPage, setStudentManagementPage] = useState<StudentManagementPage>({
+    totalStudents: 0,
+    paymentDue: 0,
+    activeStudents: 0,
+    dinningAttendenceInPercent: 0,
+    students: []
+  });
+  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [availableRooms, setAvailableRooms] = useState<AvailableRooms[]>([]);
+  const [assignRoomModalOpen, setAssignRoomModalOpen] = useState(false);
+  const Token=localStorage.getItem('token');
 
-  const students: Student[] = [
-    {
-      id: 1,
-      name: 'John Doe',
-      studentId: '2024001',
-      photo: 'https://i.pravatar.cc/150?img=1',
-      department: 'CSE',
-      year: '3rd',
-      room: '101',
-      email: 'john.doe@example.com',
-      phone: '+880 1234567890',
-      guardianName: 'Robert Doe',
-      guardianPhone: '+880 1234567891',
-      address: 'Dhaka, Bangladesh',
-      joinDate: '2024-01-15',
-      status: 'Active',
-      paymentStatus: 'Paid',
-      attendance: 95
-    },
-    // Add more student data...
-  ];
+  useEffect(() => {
+    const fetchData = () => {
+      fetch('https://localhost:7057/StudentManagement/GetStudentManagementPage', {
+        method: 'GET',
+        headers: {
+          'content-type': 'application/json',
+          'Authorization': `Bearer ${Token}`,
+        },
+      })
+        .then(async (response) => {
+          if (!response.ok) {
+            const errorMessage = await response.text();
+            if (response.status === 401) {
+              window.location.href = '/login';
+              alert(`Unauthorized: Login First`);
+              return;
+            }
+            if (response.status === 400) {
+              window.location.href = '/';
+              alert(`${errorMessage}`);
+              return;
+            }
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then((data: StudentManagementPage) => {
+          setStudentManagementPage(data);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error('There was an error!', error);
+        });
+    };
+  
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchData();
+      }
+    };
+  
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+  
+    fetchData(); 
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchData();
+      }
+    }, 60000); 
+  
+    return () => {
+      clearInterval(intervalId); 
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+  
+  console.log(studentManagementPage);
 
-  const filteredStudents = students.filter(student => {
+  console.log(studentManagementPage);
+
+  const handleDelete = (studentId: number) => {
+    const isDelete = window.confirm('Are you sure to delete?');
+    if (!isDelete) return;
+
+    fetch(`https://localhost:7057/StudentManagement/DeleteStudent/${studentId}`, {
+      method: 'DELETE',
+      headers: {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${Token}`,
+      },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          if (response.status === 401) {
+            window.location.href = '/login';
+            alert(`Unauthorized: Login First`);
+            return;
+          }
+          if (response.status === 400) {
+            window.location.href = '/';
+            alert(`${errorMessage}`);
+            return;
+          }
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then((data:StudentManagementPage) => {
+        setStudentManagementPage(data);
+        alert('Student Deleted Successfully');
+        return;
+      })
+      .catch((error) => {
+        console.error('There was an error!', error);
+      });
+  };
+
+  const openAssignRoomModal = (studentId: number) => {
+    setSelectedStudentId(studentId); // Store the studentId
+    fetch('https://localhost:7057/StudentManagement/GetAvailableRooms', {
+      method: 'GET',
+      headers: {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${Token}`,
+      },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          if (response.status === 401) {
+            window.location.href = '/login';
+            alert(`Unauthorized: Login First`);
+            return;
+          }
+          if (response.status === 400) {
+            window.location.href = '/';
+            alert(`${errorMessage}`);
+            return;
+          }
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then((data: AvailableRooms[]) => {
+        setAvailableRooms(data);
+        setAssignRoomModalOpen(true); // Open the modal
+      })
+      .catch((error) => {
+        console.error('There was an error!', error);
+      });
+  };
+
+  const handleAssignRoom = (roomNo: string) => {
+    console.log(roomNo);
+    console.log(selectedStudentId);
+    if (!selectedStudentId) return;
+    //Ask for confirmation
+    const isAssign = window.confirm('Are you sure to assign this room?');
+    fetch(`https://localhost:7057/StudentManagement/AssignRoom/${selectedStudentId}/${roomNo}`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${Token}`,
+      },
+      //body: JSON.stringify({ roomNo }), // Send the room number to assign
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          if (response.status === 401) {
+            window.location.href = '/login';
+            alert(`Unauthorized: Login First`);
+            return;
+          }
+          if (response.status === 400) {
+            window.location.href = '/';
+            alert(`${errorMessage}`);
+            return;
+          }
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then((data: StudentManagementPage) => {
+        setStudentManagementPage(data); // Update the student list
+        setAssignRoomModalOpen(false); // Close the modal
+        alert('Room Assigned Successfully');
+      })
+      .catch((error) => {
+        console.error('There was an error!', error);
+      });
+  };
+
+  const filteredStudents = studentManagementPage.students.filter(student => {
     const matchesSearch = 
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.studentId.includes(searchTerm) ||
-      student.room.includes(searchTerm);
+      student.studentId.toString().includes(searchTerm);
     const matchesDepartment = filterDepartment === 'all' || student.department === filterDepartment;
-    const matchesYear = filterYear === 'all' || student.year === filterYear;
-    const matchesStatus = filterStatus === 'all' || student.status === filterStatus;
-    return matchesSearch && matchesDepartment && matchesYear && matchesStatus;
+    const matchesBatch = filterBatch === '' || student.batch.toString().includes(filterBatch);
+    const matchesStatus = filterStatus === 'all' || student.isActive === (filterStatus === 'Active');
+    return matchesSearch && matchesDepartment && matchesBatch && matchesStatus;
   });
 
-  const getStatusColor = (status: Student['status']) => {
+  const getStatusColor = (status: StudentToShow['isActive']) => {
     switch (status) {
-      case 'Active': return 'bg-green-100 text-green-800';
-      case 'Inactive': return 'bg-red-100 text-red-800';
-      case 'Alumni': return 'bg-blue-100 text-blue-800';
+      case true: return 'bg-green-100 text-green-800';
+      case false: return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getPaymentStatusColor = (status: Student['paymentStatus']) => {
+  const getPaymentStatusColor = (status: StudentToShow['paymentStatus']) => {
     switch (status) {
       case 'Paid': return 'text-green-600';
       case 'Pending': return 'text-orange-600';
-      case 'Overdue': return 'text-red-600';
+      case 'Due': return 'text-red-600';
       default: return 'text-gray-600';
     }
   };
+
+
+  if(loading){
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="p-8 max-w-md w-full bg-white shadow-lg rounded-lg">
+          <h1 className="text-3xl font-bold text-center mb-6">Loading...</h1>
+        </div>
+      </div>
+    );
+  }
+
+
 
   return (
     <div className="space-y-6">
@@ -87,14 +300,7 @@ const StudentManagement: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-2xl font-bold text-gray-800">Student Management</h2>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-            <UserPlus size={20} />
-            Add New Student
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-            <Download size={20} />
-            Export
-          </button>
+          
         </div>
       </div>
 
@@ -104,7 +310,7 @@ const StudentManagement: React.FC = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-600">Total Students</p>
-              <h3 className="text-2xl font-bold text-gray-800 mt-1">{students.length}</h3>
+              <h3 className="text-2xl font-bold text-gray-800 mt-1">{studentManagementPage.totalStudents}</h3>
             </div>
             <div className="p-3 bg-indigo-100 rounded-lg">
               <Users className="text-indigo-600" size={24} />
@@ -117,7 +323,7 @@ const StudentManagement: React.FC = () => {
             <div>
               <p className="text-sm text-gray-600">Active Students</p>
               <h3 className="text-2xl font-bold text-green-600 mt-1">
-                {students.filter(s => s.status === 'Active').length}
+                {studentManagementPage.activeStudents}
               </h3>
             </div>
             <div className="p-3 bg-green-100 rounded-lg">
@@ -131,7 +337,7 @@ const StudentManagement: React.FC = () => {
             <div>
               <p className="text-sm text-gray-600">Payment Due</p>
               <h3 className="text-2xl font-bold text-red-600 mt-1">
-                {students.filter(s => s.paymentStatus === 'Overdue').length}
+                {studentManagementPage.paymentDue}
               </h3>
             </div>
             <div className="p-3 bg-red-100 rounded-lg">
@@ -143,9 +349,9 @@ const StudentManagement: React.FC = () => {
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-sm text-gray-600">Avg. Attendance</p>
+              <p className="text-sm text-gray-600">Dinning Attendance</p>
               <h3 className="text-2xl font-bold text-blue-600 mt-1">
-                {Math.round(students.reduce((acc, s) => acc + s.attendance, 0) / students.length)}%
+                {studentManagementPage.dinningAttendenceInPercent}%
               </h3>
             </div>
             <div className="p-3 bg-blue-100 rounded-lg">
@@ -180,18 +386,27 @@ const StudentManagement: React.FC = () => {
               <option value="CSE">CSE</option>
               <option value="EEE">EEE</option>
               <option value="ME">ME</option>
+              <option value="CE">CE</option>
+              <option value="TE">ETE</option>
+              <option value="IPE">IPE</option>
+              <option value="MSE">MSE</option>
+              <option value="NSE">WRE</option>
+              <option value="ARCH">ARCH</option>
+              <option value="URP">URP</option>
+              <option value="BME">URP</option>             
             </select>
-            <select
-              value={filterYear}
-              onChange={(e) => setFilterYear(e.target.value)}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="all">All Years</option>
-              <option value="1st">1st Year</option>
-              <option value="2nd">2nd Year</option>
-              <option value="3rd">3rd Year</option>
-              <option value="4th">4th Year</option>
-            </select>
+             <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="text"
+                placeholder="Search Batch..."
+                value={filterBatch}
+                onChange={(e) => setFilterBatch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+          </div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
@@ -199,8 +414,7 @@ const StudentManagement: React.FC = () => {
             >
               <option value="all">All Status</option>
               <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-              <option value="Alumni">Alumni</option>
+              <option value="Inacive">Inactive</option>
             </select>
           </div>
         </div>
@@ -208,77 +422,114 @@ const StudentManagement: React.FC = () => {
 
       {/* Student Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredStudents.map(student => (
-          <div key={student.id} className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow">
-            <div className="p-6">
-              <div className="flex items-start gap-4">
-                <img
-                  src={student.photo}
-                  alt={student.name}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-                <div className="flex-1">
-                  <div className="flex justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800">{student.name}</h3>
-                      <p className="text-sm text-gray-600">ID: {student.studentId}</p>
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(student.status)}`}>
-                      {student.status}
-                    </span>
-                  </div>
+  {filteredStudents.length > 0 ? (
+    filteredStudents.map(student => (
+      <div key={student.studentId} className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow">
+        <div className="p-6">
+          <div className="flex items-start gap-4">
+            <img
+              src={`data:image/png;base64,${student.image}`}
+              alt={student.name}
+              className="w-16 h-16 rounded-full object-cover"
+            />
+            <div className="flex-1">
+              <div className="flex justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">{student.name}</h3>
+                  <p className="text-sm text-gray-600">ID: {student.studentId}</p>
                 </div>
-              </div>
-
-              <div className="mt-4 space-y-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <BookOpen size={16} className="text-gray-400" />
-                  <span>{student.department} - {student.year} Year</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Home size={16} className="text-gray-400" />
-                  <span>Room {student.room}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Mail size={16} className="text-gray-400" />
-                  <a href={`mailto:${student.email}`} className="text-indigo-600 hover:text-indigo-800">
-                    {student.email}
-                  </a>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Phone size={16} className="text-gray-400" />
-                  <a href={`tel:${student.phone}`} className="text-indigo-600 hover:text-indigo-800">
-                    {student.phone}
-                  </a>
-                </div>
-              </div>
-
-              <div className="mt-4 pt-4 border-t">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-600">Payment Status:</span>
-                  <span className={`text-sm font-medium ${getPaymentStatusColor(student.paymentStatus)}`}>
-                    {student.paymentStatus}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                  <span className="text-sm text-gray-600">Attendance:</span>
-                  <span className="text-sm font-medium">{student.attendance}%</span>
-                </div>
-              </div>
-
-              <div className="mt-6 flex justify-end gap-2">
-                <button className="p-2 text-blue-600 hover:bg-blue-50 rounded">
-                  <Edit size={18} />
-                </button>
-                <button className="p-2 text-red-600 hover:bg-red-50 rounded">
-                  <Trash2 size={18} />
-                </button>
+                <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(student.isActive ? true : false)}`}>
+                  {student.isActive ? 'Active' : 'Inactive'}
+                </span>
               </div>
             </div>
           </div>
-        ))}
+
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm">
+              <BookOpen size={16} className="text-gray-400" />
+              <span>{student.department} - {student.batch.toString()} Batch</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Home size={16} className="text-gray-400" />
+              {student.roomNo ? (
+  <span>Room: {student.roomNo}</span>
+) : (
+  <>
+    <span>No Room Assigned</span>
+    <button
+      className="ml-2 px-2 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded"
+      onClick={() => openAssignRoomModal(student.studentId)}
+    >
+      Assign Room
+    </button>
+  </>
+)}
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Mail size={16} className="text-gray-400" />
+              <a href={`mailto:${student.email}`} className="text-indigo-600 hover:text-indigo-800">
+                {student.email}
+              </a>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-4 border-t">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Payment Status:</span>
+              <span className={`text-sm font-medium ${getPaymentStatusColor(student.paymentStatus)}`}>
+                {student.paymentStatus}
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-end gap-2">
+            {/* <button className="p-2 text-blue-600 hover:bg-blue-50 rounded">
+              <Edit size={18} />
+            </button> */}
+            <button className="p-2 text-red-600 hover:bg-red-50 rounded" onClick={() => handleDelete(student.studentId)}>
+              <Trash2 size={18} />
+            </button>
+          </div>
+        </div>
       </div>
+    ))
+  ) : (
+    <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center text-gray-600">
+      No Student
     </div>
+  )}
+</div>
+<Modal
+  isOpen={assignRoomModalOpen}
+  onRequestClose={() => setAssignRoomModalOpen(false)}
+  className="modal"
+  overlayClassName="overlay"
+  style={modalStyles}
+>
+  <div className="p-6 bg-white rounded-xl shadow-md max-h-96 overflow-y-auto">
+    <h2 className="text-xl font-bold text-gray-800">Assign Room</h2>
+    <div className="mt-4 space-y-4">
+      {availableRooms.map((room) => (
+        <div key={room.roomNo} className="flex justify-between items-center">
+          <span>{room.roomNo}</span>
+          <span>{room.availableSeats} seats available</span>
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded"
+            onClick={() => handleAssignRoom(room.roomNo)} // Assign the room
+          >
+            Assign
+          </button>
+        </div>
+      ))}
+    </div>
+  </div>
+</Modal>
+    </div>
+
+    /*assign room modal*/
+
+
   );
 };
 

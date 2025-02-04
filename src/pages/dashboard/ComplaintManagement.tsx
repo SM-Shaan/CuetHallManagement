@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   AlertCircle, Filter, Search, Plus, Clock,
   CheckCircle, MessageCircle, Users,
@@ -20,11 +20,100 @@ interface Complaint {
   comments: number;
 }
 
+type ComplaintPage={
+  totalComplaints:number;
+  totalPendingComplaints:number;
+  totalInProgressComplaints:number;
+  totalResolvedComplaints:number;
+}
+
 const ComplaintManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
+  const [complaintPage,setComplaintPage]=useState<ComplaintPage>({
+    totalComplaints:0,
+    totalPendingComplaints:0,
+    totalInProgressComplaints:0,
+    totalResolvedComplaints:0 
+  });
+//  useEffect(() => {
+//     fetch(`https://localhost:7057/NoticeManagement/GetNoticesOfHall`, {
+//       method: 'GET',
+//       headers: {
+//         'content-type': 'application/json',
+//         'Authorization': `Bearer ${Token}`,
+//       },
+//     })
+//       .then(async (response) => {
+//         if (!response.ok) {
+//           const errorMessage = await response.text();
+//           if (response.status === 401) {
+//             window.location.href = '/login';
+//             alert(`Unauthorized: Login First`);
+//             return;
+//           }
+//           if (response.status === 400) {
+//             window.location.href = '/';
+//             alert(`${errorMessage}`);
+//             return;
+//           }
+//           throw new Error('Network response was not ok');
+//         }
+//         return response.json();
+//       })
+//       .then((data: NoticePage) => {
+//         setNoticepage(data);
+//       })
+//       .catch((error) => {
+//         console.error('Error fetching notices data:', error);
+//       });
+//   }, [Token]);
+
+  const Token=localStorage.getItem('token');
+  useEffect(()=>{
+    fetch(`https://localhost:7057/AminComplaint/AdminComplaintOverview`,{
+      method:'GET',
+      headers:{
+        'content-type':'application/json',
+        'Authorization':`Bearer ${Token}`,
+      },
+    })
+    .then(async(response)=>{
+      if(!response.ok){
+        const errorMessage=await response.text();
+        if(response.status===401){
+          window.location.href='/login';
+          alert(`Unauthorized: Login First`);
+          return;
+        }
+        if(response.status===400){
+          window.location.href='/';
+          alert(`${errorMessage}`);
+          return;
+        }
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then((data:ComplaintPage)=>{
+      setComplaintPage(data);
+      return;
+    })
+    .catch((error)=>{
+      console.error('Error fetching complaints data:',error);
+    }
+    )
+  },[]);
+
+  console.log(complaintPage);
+
+
+
+
+
+
 
   const complaints: Complaint[] = [
     {

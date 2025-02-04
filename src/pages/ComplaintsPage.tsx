@@ -46,60 +46,66 @@ const ComplaintsPage: React.FC = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
- useEffect(() => {
-  const token = localStorage.getItem('token');
-  setIsLoading(true);
-  fetch(`https://localhost:7057/Complaint/GetComplaints?pageNumber=${pageNumber}&pageSize=5`, {
-    method: 'GET',
-    headers: {
-      'content-type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-  })
-    .then(async (response) => {
-      if (!response.ok) {
-        const errorMessage = await response.text();
-        if (response.status === 401) {
-          window.location.href = '/login';
-          alert(`Unauthorized: ${errorMessage}`);
-          return;
-        }
-        if (response.status === 400) {
-          window.location.href = '/';
-          alert(`${errorMessage}`);
-          setIsLoading(false);
-          return;
-        }
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoading(true);
+    fetch(`https://localhost:7057/Complaint/GetComplaints?pageNumber=${pageNumber}&pageSize=5`, {
+      method: 'GET',
+      headers: {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
     })
-    .then((data: Complaints[] | null) => {
-      if (data === null) {
-        throw new Error('No data available');
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          if (response.status === 401) {
+            window.location.href = '/login';
+            alert(`Unauthorized: ${errorMessage}`);
+            return;
+          }
+          if (response.status === 400) {
+            window.location.href = '/';
+            alert(`${errorMessage}`);
+            setIsLoading(false);
+            return;
+          }
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (!data) {
+          throw new Error('No data available');
+        }
+        setComplaints((prevComplaints) => {
+          const newComplaints = data.filter(
+            (newComplaint: Complaints) => !prevComplaints.some(
+              (prevComplaint) => prevComplaint.complaintId === newComplaint.complaintId
+            )
+          );
+          return [...prevComplaints, ...newComplaints];
+        });
+        setHasMore(data.length > 0);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching complaints data:', error);
+        setIsLoading(false);
+      });
+  }, [pageNumber]);
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || isLoading || !hasMore) {
+        return;
       }
-      setComplaints((prevComplaints) => [...prevComplaints, ...data]);
-      setHasMore(data.length > 0);
-      setIsLoading(false);
-    })
-    .catch((error) => {
-      console.error('Error fetching complaints data:', error);
-      setIsLoading(false);
-    });
-}, [pageNumber]);
-
-useEffect(() => {
-  const handleScroll = () => {
-    if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || isLoading || !hasMore) {
-      return;
-    }
-    setPageNumber((prevPageNumber) => prevPageNumber + 1);
-  };
-
-  window.addEventListener('scroll', handleScroll);
-  return () => window.removeEventListener('scroll', handleScroll);
-}, [isLoading, hasMore]);
-
+      setPageNumber((prevPageNumber) => prevPageNumber + 1);
+    };
+  
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isLoading, hasMore]);
   const categories = [
     'Plumbing',
     'Electrical',
