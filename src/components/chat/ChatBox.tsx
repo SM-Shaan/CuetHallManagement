@@ -1,81 +1,128 @@
-import React, { useState } from 'react';
-import { Send } from 'lucide-react';
-
-interface Message {
-  text: string;
-  isBot: boolean;
-}
+import React, { useState, useEffect, useRef } from 'react';
 
 interface ChatBoxProps {
   isOpen: boolean;
 }
 
-const ChatBox = ({ isOpen }: ChatBoxProps) => {
-  const [messages, setMessages] = useState<Message[]>([
-    { text: 'Hello! How can I help you with hall management today?', isBot: true }
-  ]);
-  const [input, setInput] = useState('');
+interface Message {
+  text: string;
+  senderName: string;
+  isMyself: boolean;
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
+const ChatBox = ({ isOpen }: ChatBoxProps) => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchChats = async () => {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch('https://localhost:7057/Chat/GetChats', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch chats');
+        }
+        const data = await response.json();
+        const fetchedMessages = data.chats.map((chat: any) => ({
+          text: chat.message,
+          senderName: chat.sender === chat.myself ? 'You' : chat.senderName,
+          isMyself: chat.sender === chat.myself,
+        }));
+        setMessages(fetchedMessages);
+      } catch (error) {
+        console.error('Error fetching chats:', error);
+      }
+    };
+
+    fetchChats();
+    const interval = setInterval(fetchChats, 1000); // Fetch chats every second
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    setMessages(prev => [...prev, { text: input, isBot: false }]);
+    const newMessage = { text: input, senderName: 'You', isMyself: true };
+    setMessages(prev => [...prev, newMessage]);
 
-    setTimeout(() => {
-      setMessages(prev => [...prev, {
-        text: "I'm here to help! You can ask me about room allocation, dining schedules, or any other hall-related queries.",
-        isBot: true
-      }]);
-    }, 1000);
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch('https://localhost:7057/Chat/AddChat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ message: input }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
 
     setInput('');
   };
+
+  useEffect(() => {
+    const sendPostRequest = async () => {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch('https://localhost:7057/Chat/Update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ message: 'Automated message' }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to send message');
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+      }
+    };
+
+    const interval = setInterval(sendPostRequest, 1000); // Send POST request every second
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, []);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed bottom-24 right-6 w-96 h-[500px] bg-white rounded-lg shadow-xl flex flex-col z-40">
       <div className="bg-indigo-600 text-white p-4 rounded-t-lg">
-        <h3 className="text-lg font-semibold">Hall Management Assistant</h3>
-        <p className="text-sm opacity-75">Ask me anything about the hall</p>
+        <h2 className="text-lg font-semibold">Chat Box</h2>
       </div>
-
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 p-4 overflow-y-auto flex flex-col-reverse">
+        <div ref={messagesEndRef} />
         {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
-          >
-            <div
-              className={`max-w-[80%] p-3 rounded-lg ${
-                message.isBot
-                  ? 'bg-gray-100 text-gray-800'
-                  : 'bg-indigo-600 text-white'
-              }`}
-            >
-              {message.text}
+          <div key={index} className={`mb-2 ${message.isMyself ? 'text-right' : 'text-left'}`}>
+            <div className={`inline-block p-2 rounded-lg ${message.isMyself ? 'bg-indigo-600 text-white' : 'bg-gray-200'}`}>
+              <div>{message.text}</div>
+              <div style={{ fontSize: '0.75rem', color: message.isMyself ? 'white' : 'gray' }}>By {message.senderName}</div>
             </div>
           </div>
         ))}
       </div>
-
-      <form onSubmit={handleSubmit} className="p-4 border-t">
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          <button
-            type="submit"
-            className="p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
-          >
-            <Send size={20} />
-          </button>
-        </div>
+      <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          className="w-full p-2 border rounded-lg"
+          placeholder="Type your message..."
+        />
       </form>
     </div>
   );

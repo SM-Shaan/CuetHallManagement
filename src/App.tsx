@@ -14,13 +14,22 @@ import PaymentPage from './pages/PaymentPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import AddHall from '../Checker/AddHall';
+import RoomManagement from './pages/dashboard/RoomManagement';
 import {jwtDecode} from 'jwt-decode';
+import NoticeManagement from './pages/dashboard/NoticeManagement';
+import ComplaintManagement from './pages/dashboard/ComplaintManagement';
+import StudentManagement from './pages/dashboard/StudentManagement';
+import PaymentManagement from './pages/dashboard/PaymentManagement';
+import HallManagement from './pages/dashboard/AddHall';
+import AdminOverviewPage from './pages/AdminPageOverview';
+import DSWStudents from './pages/DSWStudent';
 
 function App() {
   const Token = localStorage.getItem('token');
   const [isUserActive, setIsUserActive] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
 
-  const handleUserActivity = (isActive: boolean,role:string) => {
+  const handleUserActivity = (isActive: boolean, role: string) => {
     fetch(`https://localhost:7057/Login/UserActivity/${isActive}/${role}`, {
       method: 'POST',
       headers: {
@@ -57,30 +66,28 @@ function App() {
   useEffect(() => {
     if (Token) {
       const decodedToken: { role: string } = jwtDecode(Token);
-        console.log('User is a student');
-        
-        const handleActivity = () => {
-          setIsUserActive(true);
-        };
+      setRole(decodedToken.role);
+      const handleActivity = () => {
+        setIsUserActive(true);
+      };
 
-        document.addEventListener('mousemove', handleActivity);
-        document.addEventListener('keydown', handleActivity);
+      document.addEventListener('mousemove', handleActivity);
+      document.addEventListener('keydown', handleActivity);
 
-        const intervalId = setInterval(() => {
-          if (isUserActive) {
-            handleUserActivity(true,decodedToken.role);
-            setIsUserActive(false); // Reset the activity flag
-          } else {
-            handleUserActivity(false,decodedToken.role);
-          }
-        }, 60000); // Check every 1 minute
+      const intervalId = setInterval(() => {
+        if (isUserActive) {
+          handleUserActivity(true, decodedToken.role);
+          setIsUserActive(false); // Reset the activity flag
+        } else {
+          handleUserActivity(false, decodedToken.role);
+        }
+      }, 6000); // Check every 1 minute
 
-        return () => {
-          document.removeEventListener('mousemove', handleActivity);
-          document.removeEventListener('keydown', handleActivity);
-          clearInterval(intervalId);
-        };
-      
+      return () => {
+        document.removeEventListener('mousemove', handleActivity);
+        document.removeEventListener('keydown', handleActivity);
+        clearInterval(intervalId);
+      };
     }
   }, [Token, isUserActive]);
 
@@ -111,9 +118,19 @@ function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/add-hall" element={<AddHall />} />
+              <Route path="/room-management" element={<RoomManagement />} />
+              <Route path="/complaint-management" element={<ComplaintManagement />} />
+              <Route path="/notice-management" element={<NoticeManagement />} />
+              <Route path="/student-management" element={<StudentManagement />} />
+              <Route path="/payment-management" element={<PaymentManagement />} />
+              <Route path="/addhall" element={<HallManagement />} />
+              <Route path="/adminOverview" element={<AdminOverviewPage />} />
+              <Route path="/adminStudents" element={<DSWStudents />} />
             </Routes>
           </main>
-          <ChatWidget />
+
+          {role === 'Student' && <ChatWidget />}
+
           <Footer />
         </div>
       </div>

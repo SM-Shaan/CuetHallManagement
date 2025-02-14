@@ -34,6 +34,28 @@ const modalStyles: Styles = {
   },
 };
 
+type selectedHall =
+{
+  hallId: number;
+  hallName: string;
+}
+
+type allHalls=
+{
+  halls: selectedHall[];
+}
+
+
+type StudentSuggestions=
+{
+  studentId: number;
+  name: string;
+}
+
+type Suggestion=
+{
+  suggestions: StudentSuggestions[];
+}
 
 
 type StudentToShow={
@@ -78,11 +100,20 @@ const StudentManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [availableRooms, setAvailableRooms] = useState<AvailableRooms[]>([]);
   const [assignRoomModalOpen, setAssignRoomModalOpen] = useState(false);
-  const Token=localStorage.getItem('token');
+  const [assignHallModalOpen, setAssignHallModalOpen] = useState(false);
+const [studentSuggestions, setStudentSuggestions] = useState<StudentSuggestions[]>([]);
+const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
+const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<number | null>(null);
 
+ const [selectedHall, setSelectedHall] = useState<selectedHall>({} as selectedHall);
+ 
+   const[allHalls,setAllHalls]=useState<allHalls>({} as allHalls);
+ 
+   const [hallId, setHallId] = useState(0);
+   const Token=localStorage.getItem('token');
   useEffect(() => {
-    const fetchData = () => {
-      fetch('https://localhost:7057/StudentManagement/GetStudentManagementPage', {
+      const Token = localStorage.getItem('token');
+      fetch('https://localhost:7057/DSWStudent/Halls', {
         method: 'GET',
         headers: {
           'content-type': 'application/json',
@@ -106,6 +137,51 @@ const StudentManagement: React.FC = () => {
           }
           return response.json();
         })
+        .then((data:allHalls) => {
+          setAllHalls(data);
+          const firstHall=data.halls[0];
+          setSelectedHall(firstHall);
+          //fetchData(firstHall.hallId);
+          setHallId(firstHall.hallId);
+          fetchData( firstHall.hallId);
+          return;
+        })
+        .catch((error) => {
+          console.error('There was an error!', error);
+        });    
+  
+    }, []);
+
+    // const handlePage = (hallId: number) => {
+    // };
+
+  
+    const fetchData = (hallId:number) => {
+        const Token = localStorage.getItem('token');
+      fetch(`https://localhost:7057/DSWStudent/GetStudentManagementPage/${hallId}`, {
+        method: 'GET',
+        headers: {
+          'content-type': 'application/json',
+          'Authorization': `Bearer ${Token}`,
+        },
+      })
+        .then(async (response) => {
+          if (!response.ok) {
+            const errorMessage = await response.text();
+            if (response.status === 401) {
+              window.location.href = '/login';
+              alert(`Unauthorized: Login First`);
+              return;
+            }
+            if (response.status === 400) {
+              window.location.reload();
+              alert(`${errorMessage}`);
+              return;
+            }
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
         .then((data: StudentManagementPage) => {
           setStudentManagementPage(data);
           setLoading(false);
@@ -115,27 +191,7 @@ const StudentManagement: React.FC = () => {
         });
     };
   
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        fetchData();
-      }
-    };
-  
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-  
-    fetchData(); 
-    const intervalId = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchData();
-      }
-    }, 60000); 
-  
-    return () => {
-      clearInterval(intervalId); 
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
-  
+   
   console.log(studentManagementPage);
 
   console.log(studentManagementPage);
@@ -143,8 +199,8 @@ const StudentManagement: React.FC = () => {
   const handleDelete = (studentId: number) => {
     const isDelete = window.confirm('Are you sure to delete?');
     if (!isDelete) return;
-
-    fetch(`https://localhost:7057/StudentManagement/DeleteStudent/${studentId}`, {
+    console.log(hallId);
+    fetch(`https://localhost:7057/DSWStudent/DeleteStudent/${studentId}/${hallId}`, {
       method: 'DELETE',
       headers: {
         'content-type': 'application/json',
@@ -180,7 +236,7 @@ const StudentManagement: React.FC = () => {
 
   const openAssignRoomModal = (studentId: number) => {
     setSelectedStudentId(studentId); // Store the studentId
-    fetch('https://localhost:7057/StudentManagement/GetAvailableRooms', {
+    fetch(`https://localhost:7057/DSWStudent/GetAvailableRoom/${hallId}`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',
@@ -219,7 +275,7 @@ const StudentManagement: React.FC = () => {
     if (!selectedStudentId) return;
     //Ask for confirmation
     const isAssign = window.confirm('Are you sure to assign this room?');
-    fetch(`https://localhost:7057/StudentManagement/AssignRoom/${selectedStudentId}/${roomNo}`, {
+    fetch(`https://localhost:7057/DSWStudent/AssignRoom/${selectedStudentId}/${roomNo}/${hallId}`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -247,12 +303,77 @@ const StudentManagement: React.FC = () => {
       .then((data: StudentManagementPage) => {
         setStudentManagementPage(data); // Update the student list
         setAssignRoomModalOpen(false); // Close the modal
+        window.location.reload();
         alert('Room Assigned Successfully');
       })
       .catch((error) => {
         console.error('There was an error!', error);
       });
   };
+
+
+
+  useEffect(() => {
+    fetch('https://localhost:7057/DSWStudent/StudentsToAddSuggestion', {
+      method: 'GET',
+      headers: {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${Token}`,
+      },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          throw new Error(errorMessage);
+        }
+        return response.json();
+      })
+      .then((data: Suggestion) => {
+        console.log
+        setStudentSuggestions(data.suggestions);
+      })
+      .catch((error) => {
+        console.error('There was an error!', error);
+      });
+  }, [Token]);
+  
+  const handleAssignHall = () => {
+    if (!selectedStudent || !selectedHallForAssignment) return;
+    fetch(`https://localhost:7057/DSWStudent/StudentToHall/${selectedStudent}/${selectedHallForAssignment}`, {
+      method: 'PUT',
+      headers: {
+        'content-type': 'application/json',
+        'Authorization': `Bearer ${Token}`,
+      },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          throw new Error(errorMessage);
+        }
+        return response.json();
+      })
+      .then((data:StudentManagementPage) => {
+        alert('Hall Assigned Successfully');
+        //setStudentManagementPage(data);
+        window.location.reload();
+        setAssignHallModalOpen(false);
+        return;
+      })
+      .catch((error) => {
+        console.error('There was an error!', error);
+      });
+  };
+
+
+
+
+
+
+
+
+
+
 
   const filteredStudents = studentManagementPage.students.filter(student => {
     const matchesSearch = 
@@ -281,16 +402,6 @@ const StudentManagement: React.FC = () => {
     }
   };
 
-  if(studentManagementPage.students.length === 0){
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="p-8 max-w-md w-full bg-white shadow-lg rounded-lg">
-          <h1 className="text-3xl font-bold text-center mb-6">No Student Available</h1>
-        </div>
-      </div>
-    );
-  }
-
 
   if(loading){
     return (
@@ -302,23 +413,45 @@ const StudentManagement: React.FC = () => {
     );
   }
 
-  //if no student or data shows no data available suggest me=>
-
-  
-
-
-
-
 
 
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h2 className="text-2xl font-bold text-gray-800">Student Management</h2>
-        <div className="flex gap-3">
-          
-        </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-3 px-5">
+      <h2 className="text-2xl font-bold text-gray-800">Student Management</h2>
+      <div className="flex gap-3">
+        <button
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+          onClick={() => setAssignHallModalOpen(true)}
+        >
+          Assign Hall to Students
+        </button>
+      </div>
+      
+    </div>
+
+    <div className="flex items-center justify-start gap-3 px-4">
+        <label className="text-sm text-gray-600">Select Hall:</label>
+        <select
+          value={selectedHall.hallId}
+          onChange={(e) => {
+            const hallId = parseInt(e.target.value);
+            const hall = allHalls.halls.find((h) => h.hallId === hallId);
+            if (hall) {
+              setSelectedHall(hall);
+              setHallId(hallId);
+              fetchData(hallId);
+            }
+          }}
+          className="px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+        >
+          {allHalls.halls.map((hall) => (
+            <option key={hall.hallId} value={hall.hallId}>
+              {hall.hallName}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Statistics Cards */}
@@ -474,12 +607,12 @@ const StudentManagement: React.FC = () => {
 ) : (
   <>
     <span>No Room Assigned</span>
-    <button
+    {/* <button
       className="ml-2 px-2 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded"
       onClick={() => openAssignRoomModal(student.studentId)}
     >
       Assign Room
-    </button>
+    </button> */}
   </>
 )}
             </div>
@@ -542,6 +675,54 @@ const StudentManagement: React.FC = () => {
     </div>
   </div>
 </Modal>
+
+<Modal
+      isOpen={assignHallModalOpen}
+      onRequestClose={() => setAssignHallModalOpen(false)}
+      className="modal"
+      overlayClassName="overlay"
+      style={modalStyles}
+    >
+      <div className="p-6 bg-white rounded-xl shadow-md max-h-96 overflow-y-auto">
+        <h2 className="text-xl font-bold text-gray-800">Assign Hall to Students</h2>
+        <div className="mt-4 space-y-4">
+          <select
+            value={selectedStudent || ''}
+            onChange={(e) => setSelectedStudent(parseInt(e.target.value))}
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="" disabled>Select Student</option>
+            {studentSuggestions.length > 0 ? (
+              studentSuggestions.map((student) => (
+              <option key={student.studentId} value={student.studentId}>
+                {student.name}-{student.studentId}
+              </option>
+              ))
+            ) : (
+              <option value="" disabled>No students available</option>
+            )}
+          </select>
+          <select
+            value={selectedHallForAssignment || ''}
+            onChange={(e) => setSelectedHallForAssignment(parseInt(e.target.value))}
+            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="" disabled>Select Hall</option>
+            {allHalls.halls.map((hall) => (
+              <option key={hall.hallId} value={hall.hallId}>
+                {hall.hallName}
+              </option>
+            ))}
+          </select>
+          <button
+            className="w-full px-4 py-2 bg-blue-600 text-white rounded"
+            onClick={handleAssignHall}
+          >
+            Submit
+          </button>
+        </div>
+      </div>
+    </Modal>
     </div>
 
     /*assign room modal*/
