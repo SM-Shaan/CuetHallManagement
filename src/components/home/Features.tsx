@@ -1,5 +1,8 @@
  import { Home, Bell, MessageSquare, UtensilsCrossed, Bot, Clock } from 'lucide-react';
+import { jwtDecode } from 'jwt-decode';
 
+ const Token=localStorage.getItem('token');
+ 
 const features = [
   {
     icon: <Home className="w-6 h-6" />,
@@ -25,6 +28,7 @@ const features = [
     description: 'View meal schedules and manage dining preferences.',
     color: 'from-pink-500 to-rose-500'
   },
+  
   {
     icon: <Bot className="w-6 h-6" />,
     title: 'Chatbox',

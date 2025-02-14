@@ -192,7 +192,7 @@ const NoticeManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-3">
         <h2 className="text-2xl font-bold text-gray-800">Notice Management</h2>
         <div className="flex gap-3">
           <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"

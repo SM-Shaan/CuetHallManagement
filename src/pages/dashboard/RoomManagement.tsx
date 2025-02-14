@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 //import Modal from 'react-modal';
 import Modal, { Styles } from 'react-modal';
+import { jwtDecode } from 'jwt-decode';
 
 Modal.setAppElement('#root');
 
@@ -92,10 +93,15 @@ const RoomManagement: React.FC = () => {
   const [showStudentsModal, setShowStudentsModal] = useState(false);
   const [selectedRoomStudents, setSelectedRoomStudents] = useState<{ name: string; studentId: Number }[]>([]);
 
-
+  const [role, setRole] = useState<string | null>(null);
   const Token = localStorage.getItem('token');
-
+ 
   useEffect(() => {
+    if (Token) {
+      const decodedToken: any = jwtDecode(Token);
+      setRole(decodedToken.role);
+  
+    }
     fetch('https://localhost:7057/AdminRoom/Room', {
       method: 'GET',
       headers: {
@@ -487,12 +493,14 @@ const RoomManagement: React.FC = () => {
     );
   };
 
+
+
   return (
     <div className="space-y-6">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-2xl font-bold text-gray-800">Room Management</h2>
-        <div className="flex gap-3">
+        <div className="flex gap-3" style={{ paddingTop: role === 'HallAdmin' ? '5px' : '0px' }}>
           <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"

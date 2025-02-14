@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { LogIn, UserPlus, LogOut } from 'lucide-react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import {jwtDecode} from 'jwt-decode';
 
 const AuthButtons = ({ token, profileImage }: { token: string | null; profileImage: string | null }) => {
-  //const history = useHistory();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (token) {
+      const decodedToken: any = jwtDecode(token);
+      setRole(decodedToken.role);
+    }
+  }, [token]);
 
   const handleLogout = () => {
     const storedToken = localStorage.getItem('token');
@@ -23,7 +31,6 @@ const AuthButtons = ({ token, profileImage }: { token: string | null; profileIma
         })
         .then(() => {
           localStorage.removeItem('token');
-          //history.push('/login');
           window.location.href = '/';
         })
         .catch((error) => {
@@ -36,26 +43,28 @@ const AuthButtons = ({ token, profileImage }: { token: string | null; profileIma
     <div className="flex items-center space-x-4">
       {token ? (
         <>
-          {profileImage ? (
-            <Link to="/login" title="Profile">
-              <img
-                src={`data:image/jpeg;base64,${profileImage}`}
-                alt="Profile"
-                className="w-10 h-10 rounded-full border-4 border-blue-500"
-              />
-            </Link>
-          ) : (
-            <Link to="/login" title="Profile">
-              <div className="w-10 h-10 rounded-full bg-gray-300 border-4 border-blue-500"></div>
-            </Link>
+          {role !== "DSW" && (
+            profileImage ? (
+              <Link to="/login" title="Profile">
+                <img
+                  src={`data:image/jpeg;base64,${profileImage}`}
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full border-4 border-blue-500"
+                />
+              </Link>
+            ) : (
+              <Link to="/login" title="Profile">
+                <div className="w-10 h-10 rounded-full bg-gray-300 border-4 border-blue-500"></div>
+              </Link>
+            )
           )}
           <button
             onClick={handleLogout}
-            className="flex items-center space-x-1 px-4 py-2 rounded-lg text-white  hover:bg-red-700 transition-colors duration-200"
+            className="flex items-center space-x-1 px-4 py-2 rounded-lg text-white hover:bg-red-700 transition-colors duration-200"
             title="Logout"
           >
             <LogOut size={18} />
-            <span></span>
+            <span>Logout</span>
           </button>
         </>
       ) : (

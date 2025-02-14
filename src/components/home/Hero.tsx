@@ -31,7 +31,7 @@ const Hero = () => {
             Streamline your hall management experience with our comprehensive digital solution.
             Access all services and information in one place.
           </p>
-          <div className="mt-10 flex justify-center gap-4">
+          {/* <div className="mt-10 flex justify-center gap-4">
             <Link to='/rooms' className="group bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition-all duration-300 transform hover:scale-105">
               View Rooms
               <ArrowRight className="inline-block ml-2 transform group-hover:translate-x-1 transition-transform duration-200" size={20} />
@@ -40,10 +40,10 @@ const Hero = () => {
               Complaint
               <ArrowRight className="inline-block ml-2 transform group-hover:translate-x-1 transition-transform duration-200" size={20} />
             </button>
-          </div>
+          </div> */}
 
           
-          <div className="flex gap-4 mt-8">
+          {/* <div className="flex gap-4 mt-8">
             <Link
               to="/manager"
               className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
@@ -51,7 +51,7 @@ const Hero = () => {
               <DashboardIcon size={20} />
               Access Dashboard
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
       
