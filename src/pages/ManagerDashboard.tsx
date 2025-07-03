@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Star } from 'lucide-react';
+import {
+  Users, Home, Bell, AlertCircle, Settings, PieChart,
+  Menu, X, LucideIcon
+} from 'lucide-react';
+import RoomManagement from './dashboard/RoomManagement';
+import StudentManagement from './dashboard/StudentManagement';
+import NoticeManagement from './dashboard/NoticeManagement';
+import ComplaintManagement from './dashboard/ComplaintManagement';
+import { jwtDecode } from 'jwt-decode';
 
 type DashboardSection = 'overview' | 'rooms' | 'students' | 'notices' | 'complaints' | 'settings';
 
@@ -8,16 +17,6 @@ interface NavigationItem {
   label: string;
   icon: typeof LucideIcon;
 }
-import {
-  Users, Home, Bell, MessageSquare, Settings, PieChart,
-  TrendingUp, Calendar, AlertCircle, CheckCircle, Clock,
-  Filter, Search, Download, Printer, RefreshCw, Menu, X, LucideIcon
-} from 'lucide-react';
-import RoomManagement from './dashboard/RoomManagement';
-import StudentManagement from './dashboard/StudentManagement';
-import NoticeManagement from './dashboard/NoticeManagement';
-import ComplaintManagement from './dashboard/ComplaintManagement';
-
 
 const renderStars = (rating: number) => {
   const stars = [];
@@ -33,18 +32,15 @@ const renderStars = (rating: number) => {
   return stars;
 };
 
-
-
 type Complaints = {
-  complaintId: number,
-  title: string,
-  catagory: string,
-  priority: string,
-  status: string,
-  location: string,
-  complaintDate: string,
-}
-
+  complaintId: number;
+  title: string;
+  catagory: string;
+  priority: string;
+  status: string;
+  location: string;
+  complaintDate: string;
+};
 
 type Statics = {
   totalStudents: number;
@@ -58,35 +54,43 @@ type Statics = {
   inProgressComplaints: number;
   resolvedComplaints: number;
   recentComplaints: Complaints[];
-  //fraction
-  review: number;//can it be fraction?=>yes
+  review: number; // can be fractional
   complaintsCategory: { [key: string]: number };
   totalReview: number;
 };
 
 const ManagerDashboard: React.FC = () => {
   const [currentView, setCurrentView] = useState<string>('dashboard');
-
-  if (currentView === 'complaints') {
-    return <ComplaintManagement />;
-  }
-
-
   const [selectedSection, setSelectedSection] = useState<DashboardSection>('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [statics, setStatics] = useState<Statics>({} as Statics);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  // New state for hall filtering
+  const [selectedHall, setSelectedHall] = useState<string>('All');
 
+  // Assume that the user's role is stored in localStorage (adjust as needed)
+  const [userRole, setUserRole] = useState("");
 
-  const [statics, setStatics] = React.useState<Statics>({} as Statics);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState('');
+  // List of hall names (adjust according to your data source)
+  const hallOptions = ['All', 'Hall A', 'Hall B', 'Hall C'];
 
-
+  // Re-fetch data when selectedHall changes (and on initial mount)
   useEffect(() => {
     const Token = localStorage.getItem('token');
-    console.log(Token);
-    //localStorage.removeItem('Token');
-    fetch('https://localhost:7057/Overview/GetHallOverview', {
+    if(Token)
+    {
+      const decodedToken: any = jwtDecode(Token);
+            setUserRole(decodedToken.role);
+    }
+    // Construct API URL with query param if a specific hall is selected (not "All")
+    let apiUrl = 'https://localhost:7057/Overview/GetHallOverview';
+    if (selectedHall !== 'All') {
+      apiUrl += `?hallName=${encodeURIComponent(selectedHall)}`;
+    }
+    setLoading(true);
+    fetch(apiUrl, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',
@@ -112,18 +116,19 @@ const ManagerDashboard: React.FC = () => {
       })
       .then((data: Statics) => {
         setStatics(data);
-        console.log(statics);
         setLoading(false);
       })
       .catch((error) => {
         console.error('Error fetching overview data:', error);
         setError(true);
         setErrorMessage(error.message);
+        setLoading(false);
       });
-  }, []);
+  }, [selectedHall]);
 
-
-
+  if (currentView === 'complaints') {
+    return <ComplaintManagement />;
+  }
 
   const handleNavigationClick = (id: DashboardSection) => {
     setSelectedSection(id);
@@ -139,10 +144,29 @@ const ManagerDashboard: React.FC = () => {
     { id: 'settings', label: 'Settings', icon: Settings }
   ];
 
-
-
   const renderOverview = () => (
     <div className="space-y-6">
+      {/* If the user is a DSW, show the hall filter dropdown */}
+      {userRole === 'HallAdmin' && (
+        <div className="mb-4">
+          <label htmlFor="hallFilter" className="block text-gray-700 font-medium mb-1">
+            Filter by Hall:
+          </label>
+          <select
+            id="hallFilter"
+            value={selectedHall}
+            onChange={(e) => setSelectedHall(e.target.value)}
+            className="p-2 border rounded-md"
+          >
+            {hallOptions.map((hall) => (
+              <option key={hall} value={hall}>
+                {hall}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
@@ -166,13 +190,11 @@ const ManagerDashboard: React.FC = () => {
             <div className="flex justify-between items-center mt-1">
               <p className="text-sm text-gray-600">Occupancy Rate</p>
               <p className="text-sm font-medium text-green-600">
-                {Math.round((statics.occupiedSeats / (statics.totalSeats)) * 100)}%
+                {Math.round((statics.occupiedSeats / statics.totalSeats) * 100)}%
               </p>
             </div>
           </div>
         </div>
-
-       
 
         <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
           <div className="flex justify-between items-center">
@@ -191,7 +213,6 @@ const ManagerDashboard: React.FC = () => {
             </div>
           </div>
           <p className="text-xl font-bold text-gray-800 mt-2">Total Review : {statics.totalReview}</p>
-
         </div>
       </div>
 
@@ -201,35 +222,39 @@ const ManagerDashboard: React.FC = () => {
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-semibold text-gray-800">Recent Complaints</h3>
-            <button className="text-sm text-indigo-600 hover:text-indigo-800"
-              onClick={() => renderSection() === <ComplaintManagement /> ? null : handleNavigationClick('complaints')}
-            >View all</button>
+            <button
+              className="text-sm text-indigo-600 hover:text-indigo-800"
+              onClick={() => handleNavigationClick('complaints')}
+            >
+              View all
+            </button>
           </div>
           <div className="space-y-4">
-            {statics.recentComplaints && statics.recentComplaints.slice(0, 4).map(complaint => (
-              <div key={complaint.complaintId} className="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                <div className={`p-2 rounded-lg ${complaint.priority.toLowerCase() === 'high' ? 'bg-red-100' :
-                  complaint.priority.toLowerCase() === 'medium' ? 'bg-orange-100' : 'bg-green-100'
-                  }`}>
-                  <AlertCircle className={`${complaint.priority.toLowerCase() === 'high' ? 'text-red-600' :
-                    complaint.priority.toLowerCase() === 'medium' ? 'text-orange-600' : 'text-green-600'
-                    }`} size={20} />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between">
-                    <h4 className="text-sm font-medium text-gray-800">{complaint.title}</h4>
-                    <span className={`text-xs px-2 py-1 rounded-full ${complaint.status.toLowerCase() === 'pending' ? 'bg-red-100 text-red-800' :
-                      complaint.status.toLowerCase() === 'in-progress' ? 'bg-orange-100 text-orange-800' :
-                        'bg-green-100 text-green-800'
-                      }`}>
-                      {complaint.status}
-                    </span>
+            {statics.recentComplaints &&
+              statics.recentComplaints.slice(0, 4).map(complaint => (
+                <div key={complaint.complaintId} className="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                  <div className={`p-2 rounded-lg ${complaint.priority.toLowerCase() === 'high' ? 'bg-red-100' :
+                    complaint.priority.toLowerCase() === 'medium' ? 'bg-orange-100' : 'bg-green-100'
+                    }`}>
+                    <AlertCircle className={`${complaint.priority.toLowerCase() === 'high' ? 'text-red-600' :
+                      complaint.priority.toLowerCase() === 'medium' ? 'text-orange-600' : 'text-green-600'
+                      }`} size={20} />
                   </div>
-                  <p className="text-xs text-gray-600 mt-1">Location: {complaint.location}</p>
-                  <p className="text-xs text-gray-500 mt-1">{complaint.complaintDate}</p>
+                  <div className="flex-1">
+                    <div className="flex justify-between">
+                      <h4 className="text-sm font-medium text-gray-800">{complaint.title}</h4>
+                      <span className={`text-xs px-2 py-1 rounded-full ${complaint.status.toLowerCase() === 'pending' ? 'bg-red-100 text-red-800' :
+                        complaint.status.toLowerCase() === 'in-progress' ? 'bg-orange-100 text-orange-800' :
+                          'bg-green-100 text-green-800'
+                        }`}>
+                        {complaint.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-1">Location: {complaint.location}</p>
+                    <p className="text-xs text-gray-500 mt-1">{complaint.complaintDate}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
 
@@ -240,7 +265,9 @@ const ManagerDashboard: React.FC = () => {
             <div>
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-gray-600">By Status</span>
-                <span className="text-gray-800">Total: {statics.inProgressComplaints + statics.resolvedComplaints + statics.pendingComplaints}</span>
+                <span className="text-gray-800">
+                  Total: {statics.inProgressComplaints + statics.resolvedComplaints + statics.pendingComplaints}
+                </span>
               </div>
               <div className="space-y-2">
                 {['pending', 'in-progress', 'resolved'].map(status => {
@@ -263,8 +290,7 @@ const ManagerDashboard: React.FC = () => {
                       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${status === 'pending' ? 'bg-red-500' :
-                            status === 'in-progress' ? 'bg-orange-500' :
-                              'bg-green-500'
+                            status === 'in-progress' ? 'bg-orange-500' : 'bg-green-500'
                             }`}
                           style={{ width: `${percentage}%` }}
                         />
@@ -276,21 +302,21 @@ const ManagerDashboard: React.FC = () => {
             </div>
 
             <div className="pt-4 border-t">
-  <div className="flex justify-between text-sm mb-2">
-    <span className="text-gray-600">By Category</span>
-  </div>
-  <div className="grid grid-cols-2 gap-4">
-    {statics.complaintsCategory && Object.keys(statics.complaintsCategory).reverse().map(category => {
-      const count = statics.complaintsCategory[category];
-      return (
-        <div key={category} className="bg-gray-50 p-3 rounded-lg">
-          <p className="text-xs text-gray-600 capitalize">{category}</p>
-          <p className="text-lg font-semibold text-gray-800 mt-1">{count}</p>
-        </div>
-      );
-    })}
-  </div>
-</div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-600">By Category</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                {statics.complaintsCategory && Object.keys(statics.complaintsCategory).reverse().map(category => {
+                  const count = statics.complaintsCategory[category];
+                  return (
+                    <div key={category} className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-600 capitalize">{category}</p>
+                      <p className="text-lg font-semibold text-gray-800 mt-1">{count}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -320,7 +346,13 @@ const ManagerDashboard: React.FC = () => {
         return (
           <div className="p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Dashboard Overview</h2>
-            {renderOverview()}
+            {loading ? (
+              <p>Loading...</p>
+            ) : error ? (
+              <p className="text-red-500">Error: {errorMessage}</p>
+            ) : (
+              renderOverview()
+            )}
           </div>
         );
     }
@@ -342,10 +374,10 @@ const ManagerDashboard: React.FC = () => {
       {/* Side Navigation */}
       <div
         className={`
-    fixed left-0 top-0 h-screen w-64 bg-indigo-800 text-white p-4 z-10
-    transform transition-transform duration-200 ease-in-out
-    ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-  `}
+          fixed left-0 top-0 h-screen w-64 bg-indigo-800 text-white p-4 z-10
+          transform transition-transform duration-200 ease-in-out
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
       >
         <div className="mb-8">
           <h2 className="text-2xl font-bold">Manager Dashboard</h2>
@@ -357,12 +389,12 @@ const ManagerDashboard: React.FC = () => {
               key={id}
               onClick={() => handleNavigationClick(id)}
               className={`
-          w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
-          ${selectedSection === id
+                w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
+                ${selectedSection === id
                   ? 'bg-indigo-700 text-white'
                   : 'text-indigo-100 hover:bg-indigo-700 hover:text-white'
                 }
-        `}
+              `}
               aria-current={selectedSection === id ? 'page' : undefined}
             >
               <Icon size={20} />
@@ -392,4 +424,4 @@ const ManagerDashboard: React.FC = () => {
   );
 };
 
-export default ManagerDashboard; 
+export default ManagerDashboard;
