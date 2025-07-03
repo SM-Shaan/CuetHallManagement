@@ -322,7 +322,7 @@ const StudentManagement: React.FC = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex justify-between items-start">
             <div>
@@ -363,7 +363,7 @@ const StudentManagement: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-md p-6">
+        {/* <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-600">Dinning Attendance</p>
@@ -375,7 +375,7 @@ const StudentManagement: React.FC = () => {
               <BookOpen className="text-blue-600" size={24} />
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Search and Filters */}

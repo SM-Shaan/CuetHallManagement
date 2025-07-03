@@ -83,7 +83,7 @@ const About = () => {
             </div>
             <div className="relative h-64 rounded-xl overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+                src="https://scontent.fdac181-1.fna.fbcdn.net/v/t1.6435-9/122159055_3456950684395798_258414448971714380_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=U-HMhV4xv3kQ7kNvgFrarZN&_nc_zt=23&_nc_ht=scontent.fdac181-1.fna&_nc_gid=Ag_6ocjMQyj9wRfDsduu2EX&oh=00_AYBfBZHwCF1Jy3VgAxyoQhe44BOimeL8LMQfYoITyvxw0A&oe=67CFA8AA"
                 alt="University Campus"
                 className="object-cover w-full h-full transform hover:scale-110 transition-transform duration-500"
               />

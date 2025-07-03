@@ -74,14 +74,14 @@ function App() {
       document.addEventListener('mousemove', handleActivity);
       document.addEventListener('keydown', handleActivity);
 
-      const intervalId = setInterval(() => {
-        if (isUserActive) {
-          handleUserActivity(true, decodedToken.role);
-          setIsUserActive(false); // Reset the activity flag
-        } else {
-          handleUserActivity(false, decodedToken.role);
-        }
-      }, 600); // Check every 1 minute
+        const intervalId = setInterval(() => {
+          if (isUserActive) {
+            handleUserActivity(true,decodedToken.role);
+            setIsUserActive(false); // Reset the activity flag
+          } else {
+            handleUserActivity(false,decodedToken.role);
+          }
+        }, 60000); // Check every 1 minute
 
       return () => {
         document.removeEventListener('mousemove', handleActivity);
