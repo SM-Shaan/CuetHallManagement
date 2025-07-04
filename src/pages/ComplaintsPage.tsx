@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Filter, Search, AlertCircle, MessageCircle, Paperclip, Camera, Calendar } from 'lucide-react';
+import { DOMAIN } from '../constants/domain';
 
 type comment = {
   commentText: string,
@@ -49,7 +50,7 @@ const ComplaintsPage: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsLoading(true);
-    fetch(`https://localhost:7057/Complaint/GetComplaints?pageNumber=${pageNumber}&pageSize=5`, {
+    fetch(`${DOMAIN}/Complaint/GetComplaints?pageNumber=${pageNumber}&pageSize=5`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',
@@ -142,7 +143,7 @@ const ComplaintsPage: React.FC = () => {
       imageData,
     };
 
-    fetch('https://localhost:7057/Complaint/AddComplaint', {
+    fetch(`${DOMAIN}/Complaint/AddComplaint`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -202,7 +203,7 @@ const ComplaintsPage: React.FC = () => {
       commentText: newComment,
     };
   
-    fetch(`https://localhost:7057/Complaint/AddComment/${complaintId}`, {
+    fetch(`${DOMAIN}/Complaint/AddComment/${complaintId}`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',

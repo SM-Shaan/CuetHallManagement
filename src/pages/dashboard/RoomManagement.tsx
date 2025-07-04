@@ -5,6 +5,7 @@ import {
 //import Modal from 'react-modal';
 import Modal, { Styles } from 'react-modal';
 import { jwtDecode } from 'jwt-decode';
+import { DOMAIN } from '../../constants/domain';
 
 Modal.setAppElement('#root');
 
@@ -102,7 +103,7 @@ const RoomManagement: React.FC = () => {
       setRole(decodedToken.role);
   
     }
-    fetch('https://localhost:7057/AdminRoom/Room', {
+    fetch(`${DOMAIN}/AdminRoom/Room`, {
       method: 'GET',
       headers: {
         'content-type': '<application/json',
@@ -138,7 +139,7 @@ const RoomManagement: React.FC = () => {
 
   const fetchStudentsForRoom = async (roomNo: string) => {
     try {
-      const response = await fetch(`https://localhost:7057/AdminRoom/GetStudents/${roomNo}`, {
+      const response = await fetch(`${DOMAIN}/AdminRoom/GetStudents/${roomNo}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -182,7 +183,7 @@ const RoomManagement: React.FC = () => {
 
 
   const handleClearRoom = (roomNo: string) => {
-    fetch(`https://localhost:7057/AdminRoom/DeleteRoom/${roomNo}`, {
+    fetch(`${DOMAIN}/AdminRoom/DeleteRoom/${roomNo}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -235,7 +236,7 @@ const RoomManagement: React.FC = () => {
   const handleSaveChanges = (roomNo: string) => {
     console.log(editRoomDetails);
     console.log(roomNo);
-    fetch(`https://localhost:7057/AdminRoom/UpdateSingleRoom/${roomNo}`, {
+    fetch(`${DOMAIN}/AdminRoom/UpdateSingleRoom/${roomNo}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -275,7 +276,7 @@ const RoomManagement: React.FC = () => {
   };
 
   const handleRoomNeedService = (roomNo: string) => {
-    fetch(`https://localhost:7057/AdminRoom/UpdateCondition/${roomNo}`, {
+    fetch(`${DOMAIN}/AdminRoom/UpdateCondition/${roomNo}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -320,7 +321,7 @@ const RoomManagement: React.FC = () => {
   const handleStudentDetails = (studentId: Number) => {
     //alert(studentId);
 
-    fetch(`https://localhost:7057/AdminRoom/GetStudent/${studentId}`, {
+    fetch(`${DOMAIN}/AdminRoom/GetStudent/${studentId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -362,7 +363,7 @@ const RoomManagement: React.FC = () => {
 
   const handleAcceptRequest = (studentId: number) => {
 
-    fetch(`https://localhost:7057/AdminRoom/AcceptRequest/${studentId}`, {
+    fetch(`${DOMAIN}/AdminRoom/AcceptRequest/${studentId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -402,7 +403,7 @@ const RoomManagement: React.FC = () => {
   };
 
   const handleRejectRequest = (studentId: number) => {
-    fetch(`https://localhost:7057/AdminRoom/RejectRequest/${studentId}`, {
+    fetch(`${DOMAIN}/AdminRoom/RejectRequest/${studentId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -443,7 +444,7 @@ const RoomManagement: React.FC = () => {
 
   const handleAddRoom = (roomData: NewRoom) => {
 
-    fetch('https://localhost:7057/AdminRoom/AddRoom', {
+    fetch(`${DOMAIN}/AdminRoom/AddRoom`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -460,7 +461,7 @@ const RoomManagement: React.FC = () => {
             return;
           }
           if (response.status === 400) {
-            window.location.href = '/';
+            window.location.reload();
             alert(`${errorMessage}`);
             return;
           }
@@ -471,7 +472,7 @@ const RoomManagement: React.FC = () => {
       .then((data: AdminRoomPage) => {
         setAdminRoomPage(data)
         console.log(data);
-        alert('Room added successfully');
+        //alert('Room added successfully');
         setLoading(false);
         setShowAddModal(false);
         return;

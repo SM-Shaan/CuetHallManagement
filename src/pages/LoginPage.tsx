@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Mail, Lock } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
 import Modal, { Styles } from 'react-modal';
+import { DOMAIN } from '../constants/domain';
+
 const modalStyles: Styles = {
   content: {
     position: 'absolute',
@@ -104,7 +106,7 @@ const LoginPage = () => {
     }
 
 
-    fetch('https://localhost:7057/Profile/ChengePassword', {
+    fetch(`${DOMAIN}/Profile/ChengePassword`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -140,7 +142,7 @@ const LoginPage = () => {
     e.preventDefault();
     console.log('Hall data submitted:', hallData);
     const Token = localStorage.getItem('token');
-    fetch('https://localhost:7057/HallDetailsManagement/EditHall', {
+    fetch(`${DOMAIN}/HallDetailsManagement/EditHall`, {
       method: 'PUT',
       headers: {
         'content-type': 'application/json',
@@ -197,7 +199,7 @@ const LoginPage = () => {
       console.log(checkRole);
       
 
-      fetch('https://localhost:7057/Profile/GetUserData', {
+      fetch(`${DOMAIN}/Profile/GetUserData`, {
         method: 'GET',
         headers: {
           'content-type': 'application/json',
@@ -246,7 +248,7 @@ const LoginPage = () => {
       role,
     };
 
-    fetch('https://localhost:7057/Login/Login', {
+    fetch(`${DOMAIN}/Login/Login`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Users, Home, AlertCircle } from 'lucide-react';
+import { DOMAIN } from '../constants/domain';
 
 type Complaints = {
   complaintId: number;
@@ -67,7 +68,7 @@ const AdminOverviewPage: React.FC = () => {
 
   useEffect(() => {
     const Token = localStorage.getItem('token');
-    fetch('https://localhost:7057/DSWHallOverview/Halls', {
+    fetch(`${DOMAIN}/DSWHallOverview/Halls`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',
@@ -90,8 +91,14 @@ const AdminOverviewPage: React.FC = () => {
           throw new Error('Network response was not ok');
         }
         return response.json();
-      })
-      .then((data:allHalls) => {
+            })
+            .then((data: allHalls) => {
+        if (!data || !data.halls || data.halls.length === 0) {
+          
+            window.location.href = '/addhall'
+            alert('No Hall Available');
+          return;
+        }
         setAllHalls(data);
         const firstHall=data.halls[0];
         setSelectedHall(firstHall);
@@ -110,7 +117,7 @@ const AdminOverviewPage: React.FC = () => {
     const Token = localStorage.getItem('token');
     //const hallId = selectedHall.hallId;
     console.log(hallId);
-    fetch(`https://localhost:7057/DSWHallOverview/GetHallOverview/${hallId}`, {
+    fetch(`${DOMAIN}/DSWHallOverview/GetHallOverview/${hallId}`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',

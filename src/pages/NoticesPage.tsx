@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import NoticeItem from '../components/notices/NoticeItem';
+import { DOMAIN } from '../constants/domain';
 
 type Notice = {
   noticeId: number;
@@ -21,7 +22,7 @@ const NoticesPage = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch(`https://localhost:7057/Notice/GetNotices?pageNumber=${currentPage}&pageSize=${noticesPerPage}&filter=${filter}&searchTerm=${searchTerm}`, {
+    fetch(`${DOMAIN}/Notice/GetNotices?pageNumber=${currentPage}&pageSize=${noticesPerPage}&filter=${filter}&searchTerm=${searchTerm}`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',

@@ -9,6 +9,7 @@ import StudentManagement from './dashboard/StudentManagement';
 import NoticeManagement from './dashboard/NoticeManagement';
 import ComplaintManagement from './dashboard/ComplaintManagement';
 import { jwtDecode } from 'jwt-decode';
+import { DOMAIN } from '../constants/domain';
 
 type DashboardSection = 'overview' | 'rooms' | 'students' | 'notices' | 'complaints' | 'settings';
 
@@ -85,7 +86,7 @@ const ManagerDashboard: React.FC = () => {
             setUserRole(decodedToken.role);
     }
     // Construct API URL with query param if a specific hall is selected (not "All")
-    let apiUrl = 'https://localhost:7057/Overview/GetHallOverview';
+    let apiUrl = `${DOMAIN}/Overview/GetHallOverview`;
     if (selectedHall !== 'All') {
       apiUrl += `?hallName=${encodeURIComponent(selectedHall)}`;
     }

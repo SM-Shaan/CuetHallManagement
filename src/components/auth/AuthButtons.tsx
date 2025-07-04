@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { LogIn, UserPlus, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {jwtDecode} from 'jwt-decode';
+import { DOMAIN } from '../../constants/domain';
 
 const AuthButtons = ({ token, profileImage }: { token: string | null; profileImage: string | null }) => {
   const [role, setRole] = useState<string | null>(null);
@@ -16,7 +17,7 @@ const AuthButtons = ({ token, profileImage }: { token: string | null; profileIma
   const handleLogout = () => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
-      fetch('https://localhost:7057/Login/Logout', {
+      fetch(`${DOMAIN}/Login/Logout`, {
         method: 'POST',
         headers: {
           'content-type': 'application/json',

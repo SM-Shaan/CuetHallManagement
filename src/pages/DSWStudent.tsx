@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 //import { MoveDiagonal } from 'lucide-react';
 import Modal, { Styles } from 'react-modal';
+import { DOMAIN } from '../constants/domain';
 
 Modal.setAppElement('#root');
 
@@ -113,7 +114,7 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
    const Token=localStorage.getItem('token');
   useEffect(() => {
       const Token = localStorage.getItem('token');
-      fetch('https://localhost:7057/DSWStudent/Halls', {
+      fetch(`${DOMAIN}/DSWStudent/Halls`, {
         method: 'GET',
         headers: {
           'content-type': 'application/json',
@@ -158,7 +159,7 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
   
     const fetchData = (hallId:number) => {
         const Token = localStorage.getItem('token');
-      fetch(`https://localhost:7057/DSWStudent/GetStudentManagementPage/${hallId}`, {
+      fetch(`${DOMAIN}/DSWStudent/GetStudentManagementPage/${hallId}`, {
         method: 'GET',
         headers: {
           'content-type': 'application/json',
@@ -200,7 +201,7 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
     const isDelete = window.confirm('Are you sure to delete?');
     if (!isDelete) return;
     console.log(hallId);
-    fetch(`https://localhost:7057/DSWStudent/DeleteStudent/${studentId}/${hallId}`, {
+    fetch(`${DOMAIN}/DSWStudent/DeleteStudent/${studentId}/${hallId}`, {
       method: 'DELETE',
       headers: {
         'content-type': 'application/json',
@@ -236,7 +237,7 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
 
   const openAssignRoomModal = (studentId: number) => {
     setSelectedStudentId(studentId); // Store the studentId
-    fetch(`https://localhost:7057/DSWStudent/GetAvailableRoom/${hallId}`, {
+    fetch(`${DOMAIN}/DSWStudent/GetAvailableRoom/${hallId}`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',
@@ -275,7 +276,8 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
     if (!selectedStudentId) return;
     //Ask for confirmation
     const isAssign = window.confirm('Are you sure to assign this room?');
-    fetch(`https://localhost:7057/DSWStudent/AssignRoom/${selectedStudentId}/${roomNo}/${hallId}`, {
+    if(!isAssign) return;
+    fetch(`${DOMAIN}/DSWStudent/AssignRoom/${selectedStudentId}/${roomNo}/${hallId}`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -317,7 +319,7 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
 
 
   useEffect(() => {
-    fetch('https://localhost:7057/DSWStudent/StudentsToAddSuggestion', {
+    fetch(`${DOMAIN}/DSWStudent/StudentsToAddSuggestion`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',
@@ -342,7 +344,7 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
   
   const handleAssignHall = () => {
     if (!selectedStudent || !selectedHallForAssignment) return;
-    fetch(`https://localhost:7057/DSWStudent/StudentToHall/${selectedStudent}/${selectedHallForAssignment}`, {
+    fetch(`${DOMAIN}/DSWStudent/StudentToHall/${selectedStudent}/${selectedHallForAssignment}`, {
       method: 'PUT',
       headers: {
         'content-type': 'application/json',
@@ -416,7 +418,7 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="p-8 max-w-md w-full bg-white shadow-lg rounded-lg">
-          <h1 className="text-3xl font-bold text-center mb-6">Loading...</h1>
+          <h1 className="text-3xl font-bold text-center mb-6">No Hall Is Added</h1>
         </div>
       </div>
     );

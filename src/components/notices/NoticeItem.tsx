@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Star as StarFilled } from 'lucide-react';
+import { DOMAIN } from '../../constants/domain';
 
 const Token = localStorage.getItem('token');
 
@@ -14,7 +15,7 @@ const NoticeItem = ({ title, noticeId, date, description, noticeType, isFavorite
   }, [isFavorite, isRead]);
 
   const handleFavorite = (noticeId: number) => {
-    fetch(`https://localhost:7057/Notice/PriorityOrFavourite/${noticeId}`, {
+    fetch(`${DOMAIN}/Notice/PriorityOrFavourite/${noticeId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -48,7 +49,7 @@ const NoticeItem = ({ title, noticeId, date, description, noticeType, isFavorite
   };
 
   const handleRead = (noticeId: number) => {
-    fetch(`https://localhost:7057/Notice/MarkAsRead/${noticeId}`, {
+    fetch(`${DOMAIN}/Notice/MarkAsRead/${noticeId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 Modal.setAppElement('#root');
 import { CSSProperties } from 'react';
+import { DOMAIN } from '../../constants/domain';
 
 const modalStyles: { content: CSSProperties; overlay: CSSProperties } = {
   content: {
@@ -43,7 +44,7 @@ const [month, setMonth] = useState("");
 const [diningTotalAmount, setDiningTotalAmount] = useState("");
 
   useEffect(() => {
-    fetch('https://localhost:7057/AdminPaymentManagement/GetPaymentPage', {
+    fetch(`${DOMAIN}/AdminPaymentManagement/GetPaymentPage`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',
@@ -82,7 +83,7 @@ const [diningTotalAmount, setDiningTotalAmount] = useState("");
   const handleHallFeeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    fetch('https://localhost:7057/AdminPaymentManagement/AssignHallFee', {
+    fetch(`${DOMAIN}/AdminPaymentManagement/AssignHallFee`, {
         method: 'POST',
         headers: {
             'content-type': 'application/json',
@@ -131,7 +132,7 @@ const [diningTotalAmount, setDiningTotalAmount] = useState("");
   const handleDiningFeeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log({ year, month, totalAmount });
-    fetch('https://localhost:7057/AdminPaymentManagement/AssignDinningFee', {
+    fetch(`${DOMAIN}/AdminPaymentManagement/AssignDinningFee`, {
         method: 'POST',
         headers: {
             'content-type': 'application/json',
