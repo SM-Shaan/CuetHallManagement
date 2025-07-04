@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Modal, { Styles } from 'react-modal';
 import PaymentForm from '../components/payment/PaymentForm';
+import { DOMAIN } from '../constants/domain';
 
 const modalStyles: Styles = {
   content: {
@@ -72,7 +73,7 @@ const PaymentPage = () => {
     if (!selectedPaymentId) return;
     const Token = localStorage.getItem('token');
 
-    fetch(`https://localhost:7057/Payment/PayHallFee/${selectedPaymentId}`, {
+    fetch(`${DOMAIN}/Payment/PayHallFee/${selectedPaymentId}`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -115,7 +116,7 @@ const PaymentPage = () => {
     if (!selectedPaymentId) return;
     const Token = localStorage.getItem('token');
 
-    fetch(`https://localhost:7057/Payment/PayDinningFee/${selectedPaymentId}`, {
+    fetch(`${DOMAIN}/Payment/PayDinningFee/${selectedPaymentId}`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -155,7 +156,7 @@ const PaymentPage = () => {
 
   const Token = localStorage.getItem('token');
   useEffect(() => {
-    fetch(`https://localhost:7057/Payment/GetStudentPaymentPage`, {
+    fetch(`${DOMAIN}/Payment/GetStudentPaymentPage`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',

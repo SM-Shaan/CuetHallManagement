@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 //import { MoveDiagonal } from 'lucide-react';
 import Modal, { Styles } from 'react-modal';
+import { DOMAIN } from '../../constants/domain';
 
 Modal.setAppElement('#root');
 
@@ -82,7 +83,7 @@ const StudentManagement: React.FC = () => {
 
   useEffect(() => {
     const fetchData = () => {
-      fetch('https://localhost:7057/StudentManagement/GetStudentManagementPage', {
+      fetch(`${DOMAIN}/StudentManagement/GetStudentManagementPage`, {
         method: 'GET',
         headers: {
           'content-type': 'application/json',
@@ -144,7 +145,7 @@ const StudentManagement: React.FC = () => {
     const isDelete = window.confirm('Are you sure to delete?');
     if (!isDelete) return;
 
-    fetch(`https://localhost:7057/StudentManagement/DeleteStudent/${studentId}`, {
+    fetch(`${DOMAIN}/StudentManagement/DeleteStudent/${studentId}`, {
       method: 'DELETE',
       headers: {
         'content-type': 'application/json',
@@ -180,7 +181,7 @@ const StudentManagement: React.FC = () => {
 
   const openAssignRoomModal = (studentId: number) => {
     setSelectedStudentId(studentId); // Store the studentId
-    fetch('https://localhost:7057/StudentManagement/GetAvailableRooms', {
+    fetch(`${DOMAIN}/StudentManagement/GetAvailableRooms`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',
@@ -219,7 +220,8 @@ const StudentManagement: React.FC = () => {
     if (!selectedStudentId) return;
     //Ask for confirmation
     const isAssign = window.confirm('Are you sure to assign this room?');
-    fetch(`https://localhost:7057/StudentManagement/AssignRoom/${selectedStudentId}/${roomNo}`, {
+    if(!isAssign) return;
+    fetch(`${DOMAIN}/StudentManagement/AssignRoom/${selectedStudentId}/${roomNo}`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',

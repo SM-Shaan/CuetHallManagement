@@ -4,6 +4,7 @@ import {
   DollarSign, Activity, ArrowUp, ArrowDown, BarChart2
 } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { DOMAIN } from '../../constants/domain';
 
 
 type Complaints={
@@ -43,7 +44,7 @@ const OverviewPage=()=> {
   const Token=localStorage.getItem('Token');
 
   useEffect(() => {
-    fetch('https://localhost:7057/Overview/GetHallOverview', {
+    fetch('${DOMAIN}/Overview/GetHallOverview', {
       method: 'GET',
       headers: {
         'content-type': '<application/json',

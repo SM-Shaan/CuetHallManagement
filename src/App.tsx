@@ -23,6 +23,7 @@ import PaymentManagement from './pages/dashboard/PaymentManagement';
 import HallManagement from './pages/dashboard/AddHall';
 import AdminOverviewPage from './pages/AdminPageOverview';
 import DSWStudents from './pages/DSWStudent';
+import { DOMAIN } from './constants/domain';
 
 function App() {
   const Token = localStorage.getItem('token');
@@ -30,7 +31,7 @@ function App() {
   const [role, setRole] = useState<string | null>(null);
 
   const handleUserActivity = (isActive: boolean, role: string) => {
-    fetch(`https://localhost:7057/Login/UserActivity/${isActive}/${role}`, {
+    fetch(`${DOMAIN}/Login/UserActivity/${isActive}/${role}`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',

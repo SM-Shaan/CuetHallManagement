@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Building, X, Wrench } from 'lucide-react';
+import { DOMAIN } from '../../constants/domain';
 
 type HallInfo = {
   hallId: number;
@@ -53,7 +54,7 @@ const HallManagement: React.FC = () => {
   useEffect(() => {
     const Token = localStorage.getItem('token');
 
-    fetch('https://localhost:7057/HallManagement/GetHalls', {
+    fetch(`${DOMAIN}/HallManagement/GetHalls`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',
@@ -173,7 +174,7 @@ const HallManagement: React.FC = () => {
     };
     console.log(payload);
     // Send the payload to your backend.
-    fetch('https://localhost:7057/HallManagement/AddHall', {
+    fetch(`${DOMAIN}/HallManagement/AddHall`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -237,7 +238,7 @@ const HallManagement: React.FC = () => {
     const Token=localStorage.getItem('token');
   
     // Send the payload to your backend.
-    fetch('https://localhost:7057/Registration/AddAdmin', {
+    fetch(`${DOMAIN}/Registration/AddAdmin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

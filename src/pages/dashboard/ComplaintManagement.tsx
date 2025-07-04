@@ -4,6 +4,9 @@ import {
   CheckCircle, MessageCircle, Users,
   Building, Download, RefreshCw, Wrench
 } from 'lucide-react';
+import { DOMAIN } from '../../constants/domain';
+
+
 
 type Comment = {
   commentText: string,
@@ -57,7 +60,7 @@ const ComplaintManagement: React.FC = () => {
   }, []);
 
   const fetchComplaintOverview = () => {
-    fetch(`https://localhost:7057/AdminComplaint/AdminComplaintOverview`, {
+    fetch(`${DOMAIN}/AdminComplaint/AdminComplaintOverview`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',
@@ -90,7 +93,7 @@ const ComplaintManagement: React.FC = () => {
   };
 
   const fetchComplaintsToShow = () => {
-    fetch(`https://localhost:7057/AdminComplaint/ComplaintsToShow`, {
+    fetch(`${DOMAIN}/AdminComplaint/ComplaintsToShow`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',
@@ -168,7 +171,7 @@ const toggleComments = (complaintId: number) => {
 
 
   const handleChangeStatus = (newStatus: string) => {
-    fetch(`https://localhost:7057/AdminComplaint/UpdateComplaintStatus/${selectedComplaintId}/${newStatus}`, {
+    fetch(`${DOMAIN}/AdminComplaint/UpdateComplaintStatus/${selectedComplaintId}/${newStatus}`, {
       method: 'PUT',
       headers: {
         'content-type': 'application/json',

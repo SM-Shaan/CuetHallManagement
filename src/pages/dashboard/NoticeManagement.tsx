@@ -5,6 +5,7 @@ import {
   MessageCircle, Download, Share2, Paperclip, Heart
 } from 'lucide-react';
 // import { Delete } from 'lucide-react';
+import { DOMAIN } from '../../constants/domain';
 
 type AddNewNotice = {
   title: string;
@@ -66,7 +67,7 @@ const NoticeManagement: React.FC = () => {
     }
 
     console.log(newNotice);
-    fetch(`https://localhost:7057/NoticeManagement/AddNotice`, {
+    fetch(`${DOMAIN}/NoticeManagement/AddNotice`, {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -106,7 +107,7 @@ const NoticeManagement: React.FC = () => {
     const isToDelete = window.confirm('Are you sure to delete the Notice?');
     if (!isToDelete) return;
 
-    fetch(`https://localhost:7057/NoticeManagement/DeleteNotice/${noticeId}`, {
+    fetch(`${DOMAIN}/NoticeManagement/DeleteNotice/${noticeId}`, {
       method: 'DELETE',
       headers: {
         'content-type': 'application/json',
@@ -142,7 +143,7 @@ const NoticeManagement: React.FC = () => {
 
 
   useEffect(() => {
-    fetch(`https://localhost:7057/NoticeManagement/GetNoticesOfHall`, {
+    fetch(`${DOMAIN}/NoticeManagement/GetNoticesOfHall`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',

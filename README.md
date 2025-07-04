@@ -12,10 +12,8 @@ The CUET Hall Management System is a robust solution designed to digitalize and 
 - **Reporting**: Generate insightful reports on occupancy, complaints, and finances.
 
 ## Installation and Run Instructions
-1. Clone the repository:
-   ```bash
-   git clone git@github.com:SM-Shaan/CuetHallManagement.git
-   ```
+1. Clone the repository
+
 2. Navigate to the project directory:
    ```bash
    cd CuetHallManagement
@@ -24,7 +22,7 @@ The CUET Hall Management System is a robust solution designed to digitalize and 
    ```bash
    npm install
    ```
-4. Set up database credentials in the `.env` file.
+4. Set domain in which the backend will run in constants/domain.ts file
 5. Run the application:
    ```bash
    npm run dev
@@ -32,7 +30,7 @@ The CUET Hall Management System is a robust solution designed to digitalize and 
 
 ## Tools and Technologies
 - **Frontend**: React.js, Typescript
-- **Backend**: ASP.NET with C#
+- **Backend**: .NET Web API with C#
 - **Database**: MongoDB
 - **Styling**: Tailwind CSS
 

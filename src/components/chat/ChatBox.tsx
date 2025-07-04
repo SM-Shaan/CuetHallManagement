@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { DOMAIN } from '../../constants/domain';
 
 interface ChatBoxProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ const ChatBox = ({ isOpen }: ChatBoxProps) => {
     const fetchChats = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch('https://localhost:7057/Chat/GetChats', {
+        const response = await fetch(`${DOMAIN}/Chat/GetChats`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -55,7 +56,7 @@ const ChatBox = ({ isOpen }: ChatBoxProps) => {
 
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch('https://localhost:7057/Chat/AddChat', {
+      const response = await fetch(`${DOMAIN}/Chat/AddChat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -77,7 +78,7 @@ const ChatBox = ({ isOpen }: ChatBoxProps) => {
     const sendPostRequest = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch('https://localhost:7057/Chat/Update', {
+        const response = await fetch(`${DOMAIN}/Chat/Update`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

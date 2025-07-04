@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { DOMAIN } from '../constants/domain';
 
 const SignupPage = () => {
   const [id, setId] = useState('');
@@ -57,7 +58,7 @@ const SignupPage = () => {
 
     setIsLoading(true);
 
-    fetch('https://localhost:7057/Registration/Registration', {
+    fetch(`${DOMAIN}/Registration/Registration`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -95,7 +96,7 @@ const SignupPage = () => {
       verificationCode
     };
 
-    fetch('https://localhost:7057/Registration/Verify', {
+    fetch(`${DOMAIN}/Registration/Verify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

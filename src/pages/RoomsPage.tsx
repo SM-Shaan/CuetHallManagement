@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import RoomApplicationForm from '../components/rooms/RoomApplicationForm';
+import { DOMAIN } from '../constants/domain';
 
 type Student = {
   id: number;
@@ -57,7 +58,7 @@ const RoomsPage = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
   
-    fetch('https://localhost:7057/Room/GetRoomData', {
+    fetch(`${DOMAIN}/Room/GetRoomData`, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',
@@ -108,7 +109,7 @@ const RoomsPage = () => {
 
 
     const token = localStorage.getItem('token');
-    fetch(`https://localhost:7057/Room/Apply/${roomNumber}`, {
+    fetch(`${DOMAIN}/Room/Apply/${roomNumber}`, {
       method: 'POST',
       headers: {
         'content-type': 'applications/json',
@@ -157,7 +158,7 @@ const RoomsPage = () => {
   const handleCancelRequest = (roomNumber: string) => {
 
     const token = localStorage.getItem('token');
-    fetch(`https://localhost:7057/Room/CancelRequest/${roomNumber}`, {
+    fetch(`${DOMAIN}/Room/CancelRequest/${roomNumber}`, {
       method: 'DELETE',
       headers: {
         'content-type': 'applications/json',

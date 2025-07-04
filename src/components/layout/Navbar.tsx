@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'; // Import Link for routing
 import AuthButtons from '../auth/AuthButtons';
 import DashboardIcon from '../icons/DashboardIcon';
 import {jwtDecode} from 'jwt-decode';
+import { DOMAIN } from '../../constants/domain';
 
 const Navbar = () => {
   const [token, setToken] = useState<string | null>(null);
@@ -24,7 +25,7 @@ const Navbar = () => {
       const decodedToken: any = jwtDecode(storedToken);
       setRole(decodedToken.role);
       console.log('Role:', decodedToken.role);
-      fetch('https://localhost:7057/HomePage/GetHomePageData', {
+      fetch(`${DOMAIN}/HomePage/GetHomePageData`, {
         method: 'GET',
         headers: {
           'content-type': 'application/json',
