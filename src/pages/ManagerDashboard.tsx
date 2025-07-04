@@ -148,7 +148,11 @@ const ManagerDashboard: React.FC = () => {
   const renderOverview = () => (
     <div className="space-y-6">
       {/* If the user is a DSW, show the hall filter dropdown */}
+<<<<<<< HEAD
+      {userRole === 'HallAdmin' && (
+=======
       {/* {userRole === 'HallAdmin' && (
+>>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
         <div className="mb-4">
           <label htmlFor="hallFilter" className="block text-gray-700 font-medium mb-1">
             Filter by Hall:
@@ -166,7 +170,11 @@ const ManagerDashboard: React.FC = () => {
             ))}
           </select>
         </div>
+<<<<<<< HEAD
+      )}
+=======
       )} */}
+>>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
@@ -214,7 +222,11 @@ const ManagerDashboard: React.FC = () => {
             </div>
           </div>
           <p className="text-xl font-bold text-gray-800 mt-2">Total Review : {statics.totalReview}</p>
+<<<<<<< HEAD
+        </div>
+=======
         </div> */}
+>>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
       </div>
 
       {/* Complaints Section */}
