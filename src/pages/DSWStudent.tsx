@@ -303,7 +303,10 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
       .then((data: StudentManagementPage) => {
         setStudentManagementPage(data); // Update the student list
         setAssignRoomModalOpen(false); // Close the modal
+<<<<<<< HEAD
+=======
         window.location.reload();
+>>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
         alert('Room Assigned Successfully');
       })
       .catch((error) => {
@@ -353,10 +356,16 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
         }
         return response.json();
       })
+<<<<<<< HEAD
+      .then((data:allHalls) => {
+        alert('Hall Assigned Successfully');
+        setAllHalls(data);
+=======
       .then((data:StudentManagementPage) => {
         alert('Hall Assigned Successfully');
         //setStudentManagementPage(data);
         window.location.reload();
+>>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
         setAssignHallModalOpen(false);
         return;
       })
@@ -418,7 +427,11 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
   return (
     <div className="space-y-6">
       {/* Header Section */}
+<<<<<<< HEAD
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+=======
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-3 px-5">
+>>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
       <h2 className="text-2xl font-bold text-gray-800">Student Management</h2>
       <div className="flex gap-3">
         <button
@@ -428,10 +441,14 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
           Assign Hall to Students
         </button>
       </div>
+<<<<<<< HEAD
+      <div className="flex items-center justify-between">
+=======
       
     </div>
 
     <div className="flex items-center justify-start gap-3 px-4">
+>>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
         <label className="text-sm text-gray-600">Select Hall:</label>
         <select
           value={selectedHall.hallId}
@@ -453,9 +470,16 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
           ))}
         </select>
       </div>
+<<<<<<< HEAD
+    </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+=======
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+>>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex justify-between items-start">
             <div>
@@ -496,7 +520,11 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
           </div>
         </div>
 
+<<<<<<< HEAD
+        <div className="bg-white rounded-xl shadow-md p-6">
+=======
         {/* <div className="bg-white rounded-xl shadow-md p-6">
+>>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-600">Dinning Attendance</p>
@@ -508,7 +536,11 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
               <BookOpen className="text-blue-600" size={24} />
             </div>
           </div>
+<<<<<<< HEAD
+        </div>
+=======
         </div> */}
+>>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
       </div>
 
       {/* Search and Filters */}
@@ -607,12 +639,20 @@ const [selectedHallForAssignment, setSelectedHallForAssignment] = useState<numbe
 ) : (
   <>
     <span>No Room Assigned</span>
+<<<<<<< HEAD
+    <button
+=======
     {/* <button
+>>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
       className="ml-2 px-2 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded"
       onClick={() => openAssignRoomModal(student.studentId)}
     >
       Assign Room
+<<<<<<< HEAD
+    </button>
+=======
     </button> */}
+>>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
   </>
 )}
             </div>

@@ -83,7 +83,11 @@ const Navbar = () => {
   <>
     <NavItem
       icon={<MessageSquare size={20} />}
+<<<<<<< HEAD
+      text="Complain"
+=======
       text="Complaints"
+>>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
       route={role === "HallAdmin" ? "/complaint-management" : "/complaints"}
     />
     <NavItem
