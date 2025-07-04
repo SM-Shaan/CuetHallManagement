@@ -184,11 +184,7 @@ const AdminOverviewPage: React.FC = () => {
 
 
       {/* Stats Grid */}
-<<<<<<< HEAD
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-=======
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
->>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
         {/* Students */}
         <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
           <div className="flex justify-between items-center">
@@ -229,11 +225,7 @@ const AdminOverviewPage: React.FC = () => {
         </div>
 
         {/* Rating */}
-<<<<<<< HEAD
-        <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
-=======
         {/* <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
->>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold text-gray-800">Rating</h3>
             <div className="flex">
@@ -241,11 +233,7 @@ const AdminOverviewPage: React.FC = () => {
             </div>
           </div>
           <p className="text-xl font-bold text-gray-800 mt-2">Total Review : {statics.totalReview}</p>
-<<<<<<< HEAD
-        </div>
-=======
         </div> */}
->>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
       </div>
 
       {/* Complaints Section */}

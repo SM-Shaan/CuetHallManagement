@@ -202,11 +202,7 @@ const HallManagement: React.FC = () => {
       .then((data: AllHalls) => {
         console.log(data);
         setAllHalls(data);
-<<<<<<< HEAD
-        alert('Hall added successfully!');
-=======
         if(data) {alert('Hall added successfully!');}
->>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
         handleCloseModal(); // Close the modal after successful submission
       })
       .catch((error) => {
@@ -269,11 +265,7 @@ const HallManagement: React.FC = () => {
       })
       .then((data) => {
         console.log(data);
-<<<<<<< HEAD
-        alert('Hall assigned successfully!');
-=======
         if(data) {alert('Hall assigned successfully!');}
->>>>>>> 5ee06a8c1da2fdd39731e8721db4209b9b2d699a
         handleCloseAssignmentModal(); 
         return;// Close the modal after successful submission
       })
