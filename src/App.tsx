@@ -13,7 +13,6 @@ import NoticesPage from './pages/NoticesPage';
 import PaymentPage from './pages/PaymentPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-import AddHall from '../Checker/AddHall';
 import RoomManagement from './pages/dashboard/RoomManagement';
 import {jwtDecode} from 'jwt-decode';
 import NoticeManagement from './pages/dashboard/NoticeManagement';
@@ -118,7 +117,6 @@ function App() {
               <Route path="/payment" element={<PaymentPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignupPage />} />
-              <Route path="/add-hall" element={<AddHall />} />
               <Route path="/room-management" element={<RoomManagement />} />
               <Route path="/complaint-management" element={<ComplaintManagement />} />
               <Route path="/notice-management" element={<NoticeManagement />} />
